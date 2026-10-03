@@ -33,13 +33,18 @@ const complete = async (
   prompt: string,
   model: string,
 ): Promise<string | undefined> => {
-  const reply = await host.complete({
-    model,
-    prompt,
-    maxTokens: MAX_TOKENS,
-    timeoutMs: MODEL_TIMEOUT_MS,
-  });
-  return reply.isAnswered ? reply.text : undefined;
+  try {
+    const reply = await host.complete({
+      model,
+      prompt,
+      maxTokens: MAX_TOKENS,
+      timeoutMs: MODEL_TIMEOUT_MS,
+    });
+    return reply.isAnswered ? reply.text : undefined;
+  } catch {
+    // The engine refused to send it (a blocked model): no reply either.
+    return undefined;
+  }
 };
 
 const claudeSummary = async (
