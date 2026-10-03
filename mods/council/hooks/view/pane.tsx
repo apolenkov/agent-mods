@@ -16,7 +16,7 @@ const SECTIONS = [
 ] as const;
 
 /** What the pane's buttons do. */
-export type PaneActs = Readonly<{
+type PaneActs = Readonly<{
   onSend: () => void;
   onRerun: () => void;
   onClose: () => void;

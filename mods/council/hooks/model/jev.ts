@@ -15,7 +15,7 @@ const MAX_SCORED = 20;
 const MAX_DETAIL = 300;
 
 /** One TypeSafe question, as docs.typesafe.ai/api.md spells it. */
-export type JevQuestion = Readonly<{
+type JevQuestion = Readonly<{
   type: "noul" | "choice";
   instructions: string;
   criteria?: Readonly<Record<string, string>>;
@@ -29,13 +29,13 @@ export type JevRequest = Readonly<{
 }>;
 
 /** The part of an answer the council reads. */
-export type JevAnswer = Readonly<{ noul?: number; choice?: string }>;
+type JevAnswer = Readonly<{ noul?: number; choice?: string }>;
 
 /** Answers by question id. */
 export type JevAnswers = Readonly<Record<string, JevAnswer>>;
 
 /** A finding and its place in the list Jev was asked about. */
-export type JevItem = Readonly<{ index: number; finding: CouncilFinding }>;
+type JevItem = Readonly<{ index: number; finding: CouncilFinding }>;
 
 /** Findings judged to be one issue. */
 export type JevGroup = readonly JevItem[];

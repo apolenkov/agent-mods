@@ -48,7 +48,7 @@ const numberOf = (value: unknown, fallback: number): number =>
  * @param list the option's text
  * @returns the names, possibly none
  */
-export const membersOf = (list: string): readonly CouncilMemberName[] =>
+const membersOf = (list: string): readonly CouncilMemberName[] =>
   list
     .split(",")
     .map((name) => name.trim())
