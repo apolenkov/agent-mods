@@ -19,6 +19,8 @@ interface Kept {
   toasts: string[];
   statuses: (string | undefined)[];
   opened: number;
+  written: { path: string; text: string }[];
+  removed: string[];
 }
 
 interface Output {
@@ -60,12 +62,18 @@ export function councilWorld(
     toasts: [],
     statuses: [],
     opened: 0,
+    written: [],
+    removed: [],
   };
   const installed = script.installed ?? ["codex", "pi", "ocr"];
   const replies = [...(script.replies ?? [])];
   const clock = mock.clock(on, { now: 1_800_000_000_000 });
 
-  mock.env(on, { HOME: "/home/me", ...script.env });
+  mock.env(on, { HOME: "/home/me", TMPDIR: "/scratch/me/", ...script.env });
+  on("fs.write", (_engine, e) => {
+    kept.written.push({ path: e.path, text: e.text });
+    return { value: undefined };
+  });
   mock.store(on);
   on("session.start", (_engine, e) => ({ cwd: e.cwd }));
   on("command.register", (_engine, e) => ({ value: { command: e.name } }));
@@ -91,6 +99,9 @@ export function councilWorld(
   on("process.run", (_engine, e) => {
     kept.runs.push(e);
     const [bin, word] = e.argv;
+    if (bin === "rm") {
+      kept.removed.push(e.argv.at(-1) ?? "");
+    }
     if (word === "--version") {
       if (!installed.includes(bin as CouncilMemberName)) {
         throw new Error(`${String(bin)}: not found`);

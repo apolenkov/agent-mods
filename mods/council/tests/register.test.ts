@@ -8,6 +8,8 @@ import { PI_STDOUT } from "./fixtures/pi-stdout.ts";
 import { SESSION } from "./fixtures/session.ts";
 import { SUMMARY } from "./fixtures/summary.ts";
 
+const byText = (a = "", b = ""): number => a.localeCompare(b);
+
 const OUTPUTS = {
   codex: { stdout: CODEX_REVIEW_STDOUT },
   pi: { stdout: PI_STDOUT },
@@ -30,11 +32,9 @@ describe("register", () => {
 
     await world.clock.settle();
 
-    expect(world.kept.spawns.map((spawn) => spawn.argv[0])).toEqual([
-      "codex",
-      "pi",
-      "ocr",
-    ]);
+    expect(
+      world.kept.spawns.map((spawn) => spawn.argv[0]).toSorted(byText),
+    ).toEqual(["codex", "ocr", "pi"]);
     expect(world.kept.spawns[0]?.argv).toEqual([
       "codex",
       "exec",
@@ -88,8 +88,10 @@ describe("register", () => {
       "-",
     ]);
     expect(world.kept.spawns[0]?.input).toContain("is the cache safe?");
-    expect(world.kept.spawns[1]?.argv.at(-1)).toContain("is the cache safe?");
-    expect(world.kept.spawns[2]?.argv).toContain("--background");
+    expect(world.kept.written[0]?.text).toContain("is the cache safe?");
+    expect(
+      world.kept.spawns.find((spawn) => spawn.argv[0] === "ocr")?.argv,
+    ).toContain("--background");
   });
 
   test("fewer than two runnable members: said plainly, nothing run", async ($, on) => {
@@ -117,10 +119,9 @@ describe("register", () => {
     await $.command.run(councilCommand());
     await world.clock.settle();
 
-    expect(world.kept.spawns.map((spawn) => spawn.argv[0])).toEqual([
-      "codex",
-      "pi",
-    ]);
+    expect(
+      world.kept.spawns.map((spawn) => spawn.argv[0]).toSorted(byText),
+    ).toEqual(["codex", "pi"]);
   });
 
   test("a tool of the member's name that is not it is not run", async ($, on) => {
@@ -178,9 +179,31 @@ describe("register", () => {
     await $.command.run(councilCommand("q"));
     await world.clock.settle();
 
-    const prompt = world.kept.spawns[1]?.argv.at(-1) ?? "";
+    const prompt = world.kept.written[0]?.text ?? "";
     expect(prompt).toContain("+++ b/src/new.ts");
     expect(prompt).not.toContain("TOKEN");
+  });
+
+  test("pi and devin read the prompt from a temp file, removed after", async ($, on) => {
+    const world = councilWorld(on, { installed: ["pi", "devin"] });
+
+    await $.session.start(SESSION);
+    await $.command.run(councilCommand());
+    await world.clock.settle();
+
+    const paths = world.kept.written.map((file) => file.path).toSorted(byText);
+    expect(paths).toHaveLength(2);
+    expect(paths[1]).toMatch(/^\/scratch\/me\/council-pi-[\da-f-]{36}\.md$/u);
+    expect(paths[0]).toMatch(/^\/scratch\/me\/council-devin-/u);
+    expect(world.kept.written[0]?.text).toContain("<diff>");
+    const argvOf = (bin: string): readonly string[] =>
+      world.kept.spawns.find((spawn) => spawn.argv[0] === bin)?.argv ?? [];
+    expect(argvOf("pi")).toContain(`@${paths[1] ?? ""}`);
+    expect(argvOf("devin")).toContain(paths[0]);
+    expect(
+      world.kept.spawns.every((spawn) => spawn.argv.join(" ").length < 400),
+    ).toBe(true);
+    expect(world.kept.removed.toSorted(byText)).toEqual(paths.toSorted(byText));
   });
 
   test("/council status opens the pane", async ($, on) => {

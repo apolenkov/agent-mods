@@ -5,7 +5,11 @@ import type {
 } from "claude-code";
 
 import type { CouncilMemberName } from "../../types/index.d.ts";
-import { commandOf, type ReviewInput } from "../model/members.ts";
+import {
+  commandOf,
+  type MemberCommand,
+  type ReviewInput,
+} from "../model/members.ts";
 import { type MemberOutput, parseRun } from "../model/parse.ts";
 import type { Host } from "./host.ts";
 import { appendTail, setMember } from "./state.ts";
@@ -65,9 +69,9 @@ const timeoutOf = (
 
 const spawnOf = async (
   host: Host,
-  { name, input, timeoutMs }: MemberJob,
+  { name, timeoutMs }: MemberJob,
+  command: MemberCommand,
 ): Promise<MemberOutput | "timeout"> => {
-  const command = commandOf(name, input);
   const stream = host.spawn({
     argv: command.argv,
     ...(command.stdin !== undefined && { input: command.stdin }),
@@ -88,6 +92,16 @@ const spawnOf = async (
   return ended;
 };
 
+// A name of its own per run, in the user's temp folder.
+const promptPathOf = async (
+  host: Host,
+  name: CouncilMemberName,
+): Promise<string> => {
+  const tmpdir = (await host.tmpdir()) ?? "/tmp";
+  const folder = tmpdir.endsWith("/") ? tmpdir.slice(0, -1) : tmpdir;
+  return `${folder}/council-${name}-${crypto.randomUUID()}.md`;
+};
+
 const failureOf = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
@@ -95,13 +109,22 @@ const endedOf = async (
   host: Host,
   job: MemberJob,
 ): Promise<MemberOutput | string> => {
+  const path = await promptPathOf(host, job.name);
+  const command = commandOf(job.name, job.input, path);
   try {
-    const ended = await spawnOf(host, job);
+    if (command.promptFile !== undefined) {
+      await host.writeFile(path, command.promptFile);
+    }
+    const ended = await spawnOf(host, job, command);
     return ended === "timeout"
       ? `timed out after ${String(job.timeoutMs / MINUTE_MS)} min`
       : ended;
   } catch (error) {
     return `cannot start: ${failureOf(error)}`;
+  } finally {
+    if (command.promptFile !== undefined) {
+      await host.removeFile(path);
+    }
   }
 };
 

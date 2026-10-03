@@ -46,6 +46,15 @@ function hostOf($: Readonly<EngineInterface>): Host {
     spawn: (request) => $.process.spawn(request),
     readFile: (path) => $.fs.read(path),
     stat: (path) => $.fs.stat(path),
+    writeFile: (path, text) => $.fs.write(path, text),
+    removeFile: async (path) => {
+      try {
+        await $.process.run(["rm", "-f", path]);
+      } catch {
+        // Best effort: a prompt file left in the temp folder is no harm.
+      }
+    },
+    tmpdir: () => $.env.get("TMPDIR"),
     home: () => $.env.get("HOME"),
     typesafeKey: () => $.env.get("TYPESAFE_API_KEY"),
     typesafeModel: () => $.env.get("TYPESAFE_MODEL"),

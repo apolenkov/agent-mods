@@ -35,6 +35,12 @@ export type Host = Readonly<{
   ) => HookStream<ProcessSpawnChunk, ProcessSpawnResult>;
   /** `$.fs.read`. */
   readFile: (path: string) => Promise<string>;
+  /** `$.fs.write`. */
+  writeFile: (path: string, text: string) => Promise<void>;
+  /** Best-effort `rm -f` through `$.process.run`; never rejects. */
+  removeFile: (path: string) => Promise<void>;
+  /** `$.env.get("TMPDIR")`. */
+  tmpdir: () => Promise<string | undefined>;
   /** `$.fs.stat`: the kind and size. */
   stat: (path: string) => Promise<Readonly<{ kind: string; size: number }>>;
   /** `$.env.get("HOME")`. */
