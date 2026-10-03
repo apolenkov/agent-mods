@@ -18,8 +18,6 @@ import {
 import { claudePrompt, parseSummary, rawSummary } from "../model/summary.ts";
 import type { Host } from "./host.ts";
 
-/** The model that writes the summary's prose. */
-const CLAUDE_MODEL = "sonnet";
 const MAX_TOKENS = 4096;
 const MODEL_TIMEOUT_MS = 180_000;
 const JEV_URL = "https://api.typesafe.ai/v1/systemone";
@@ -33,9 +31,10 @@ export type SummarizeContext = Readonly<{
 const complete = async (
   host: Host,
   prompt: string,
+  model: string,
 ): Promise<string | undefined> => {
   const reply = await host.complete({
-    model: CLAUDE_MODEL,
+    model,
     prompt,
     maxTokens: MAX_TOKENS,
     timeoutMs: MODEL_TIMEOUT_MS,
@@ -46,9 +45,13 @@ const complete = async (
 const claudeSummary = async (
   host: Host,
   findings: readonly CouncilFinding[],
-  question: string | undefined,
+  context: SummarizeContext,
 ): Promise<CouncilSummary> => {
-  const reply = await complete(host, claudePrompt(findings, question));
+  const reply = await complete(
+    host,
+    claudePrompt(findings, context.question),
+    context.config.summarizerModel,
+  );
   return reply === undefined
     ? rawSummary(findings, "Claude did not answer; the findings as they came.")
     : (parseSummary(reply) ??
@@ -88,14 +91,22 @@ const askJev = async (
 const jevOnly = async (
   host: Host,
   findings: readonly CouncilFinding[],
-  { key, threshold }: Readonly<{ key: string; threshold: number }>,
+  { key, config }: Readonly<{ key: string; config: CouncilConfig }>,
 ): Promise<CouncilSummary> => {
   const model = (await host.typesafeModel()) ?? "jev-latest";
   const scored = await askJev(host, key, scoringRequests(findings, model));
   const groups = groupsOf(findings, clustersOf(findings.length, scored));
   const contra = await askJev(host, key, contradictionRequests(groups, model));
-  const sorted = classify(groups, { ...scored, ...contra }, threshold);
-  const prose = await complete(host, prosePrompt(sorted));
+  const sorted = classify(
+    groups,
+    { ...scored, ...contra },
+    config.jevThreshold,
+  );
+  const prose = await complete(
+    host,
+    prosePrompt(sorted),
+    config.summarizerModel,
+  );
   const count =
     sorted.agreements.length +
     sorted.disagreements.length +
@@ -136,15 +147,15 @@ export const summarize = async (
       ? await keyOf(host, context.config)
       : "";
   if (key === "") {
-    return claudeSummary(host, findings, context.question);
+    return claudeSummary(host, findings, context);
   }
   try {
     return await jevOnly(host, findings, {
       key,
-      threshold: context.config.jevThreshold,
+      config: context.config,
     });
   } catch (error) {
-    const summary = await claudeSummary(host, findings, context.question);
+    const summary = await claudeSummary(host, findings, context);
     const why = error instanceof Error ? error.message : String(error);
     return {
       ...summary,

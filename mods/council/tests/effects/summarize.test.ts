@@ -51,6 +51,20 @@ describe("summarize", () => {
     expect(sent).toContain("was not JSON");
   });
 
+  test(
+    "the summary runs on the configured model",
+    { options: { summarizerModel: "haiku" } },
+    async ($, on) => {
+      const world = councilWorld(on, { installed: TWO, outputs: OUTPUTS });
+
+      await $.session.start(SESSION);
+      await $.command.run(councilCommand());
+      await world.clock.settle();
+
+      expect(world.kept.models).toEqual(["haiku"]);
+    },
+  );
+
   test("Claude not answering: the same fallback", async ($, on) => {
     const world = councilWorld(on, { installed: TWO, outputs: OUTPUTS });
 

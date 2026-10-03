@@ -37,6 +37,13 @@
       "default": "claude",
       "options": ["claude", "jev"]
     },
+    "summarizerModel": {
+      "type": "string",
+      "title": "Summary model",
+      "description": "The Claude model that writes the summary: an alias (sonnet, opus, haiku) or a full model id.",
+      "required": false,
+      "default": "sonnet"
+    },
     "typesafeApiKey": {
       "type": "string",
       "title": "TypeSafe API key",

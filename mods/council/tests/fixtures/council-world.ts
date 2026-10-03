@@ -14,6 +14,7 @@ interface Kept {
   runs: Args<"process.run">[];
   spawns: Args<"process.spawn">[];
   prompts: string[];
+  models: string[];
   submitted: string[];
   fetches: { url: string; body: string; auth: string }[];
   toasts: string[];
@@ -57,6 +58,7 @@ export function councilWorld(
     runs: [],
     spawns: [],
     prompts: [],
+    models: [],
     submitted: [],
     fetches: [],
     toasts: [],
@@ -170,6 +172,7 @@ export function councilWorld(
   });
   on("model.complete", (_engine, e) => {
     kept.prompts.push(e.prompt);
+    kept.models.push(e.model);
     const text = replies.shift();
     return {
       value:

@@ -92,28 +92,30 @@ because the members' CLIs may cost you money.
 
 ## Options
 
-| Option           | Default                          | What it does                                                                |
-| ---------------- | -------------------------------- | --------------------------------------------------------------------------- |
-| `members`        | (empty: all installed)           | Comma list choosing and ordering members, e.g. `codex,ocr`.                 |
-| `limitsDir`      | `~/.local/state/executor-limits` | A file `<dir>/<member>` holding a future epoch (seconds) skips that member. |
-| `timeoutMin`     | `8`                              | A member running longer is stopped and marked failed.                       |
-| `summarizer`     | `claude`                         | `claude`, or `jev` (TypeSafe scores, Claude writes).                        |
-| `typesafeApiKey` | (empty: `TYPESAFE_API_KEY`)      | Kept in secure storage. `TYPESAFE_MODEL` picks the model (`jev-latest`).    |
-| `jevThreshold`   | `0.3`                            | Findings Jev rates less likely than this to be real go to notes.            |
-| `autoReview`     | `off`                            | `notify` turns the auto-review on.                                          |
-| `cooldownMin`    | `10`                             | The least time between two auto-reviews.                                    |
+| Option            | Default                          | What it does                                                                |
+| ----------------- | -------------------------------- | --------------------------------------------------------------------------- |
+| `members`         | (empty: all installed)           | Comma list choosing and ordering members, e.g. `codex,ocr`.                 |
+| `limitsDir`       | `~/.local/state/executor-limits` | A file `<dir>/<member>` holding a future epoch (seconds) skips that member. |
+| `timeoutMin`      | `8`                              | A member running longer is stopped and marked failed.                       |
+| `summarizer`      | `claude`                         | `claude`, or `jev` (TypeSafe scores, Claude writes).                        |
+| `summarizerModel` | `sonnet`                         | The Claude model that writes the summary (an alias or a full id).           |
+| `typesafeApiKey`  | (empty: `TYPESAFE_API_KEY`)      | Kept in secure storage. `TYPESAFE_MODEL` picks the model (`jev-latest`).    |
+| `jevThreshold`    | `0.3`                            | Findings Jev rates less likely than this to be real go to notes.            |
+| `autoReview`      | `off`                            | `notify` turns the auto-review on.                                          |
+| `cooldownMin`     | `10`                             | The least time between two auto-reviews.                                    |
 
 Limit files are only read, never written; a missing file means no limit.
 
 ### The summarizers
 
-- **claude**: one `$.model.complete` (Sonnet) merges every finding into
+- **claude**: one `$.model.complete` on `summarizerModel` (Sonnet by default) merges every finding into
   agreements, disagreements, unique findings and notes. If its reply is not
   the asked JSON, every finding is listed as it came, with a note saying so.
 - **jev**: TypeSafe's Jev decides, per finding, whether it is the same issue
   as an earlier one (a Choice), how likely it is a real defect (a Noul), and,
   per issue several members raised, whether they contradict each other.
-  Requests hold at most 9 questions and 14,000 characters; at most 20
+  Requests hold at most 9 questions and 14,000 characters (the owner's
+  calibration rule, not an API limit); at most 20
   findings are scored, the rest stand alone. Claude then writes one line per
   issue. If TypeSafe fails, Claude merges alone and a note says why.
 
