@@ -44,13 +44,15 @@ export const workingDiff = async (host: Host): Promise<string> => {
   const listed = await host.run([
     "git",
     "ls-files",
+    "-z",
     "--others",
     "--exclude-standard",
   ]);
   const cwd = await host.cwd();
   const untracked = await Promise.all(
+    // NUL-separated: names are as on disk, never quoted (core.quotePath).
     listed.stdout
-      .split("\n")
+      .split("\0")
       .filter((path) => path !== "" && isSentUntracked(path))
       .map((path) => untrackedOf(host, path, cwd)),
   );
