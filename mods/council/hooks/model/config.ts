@@ -20,6 +20,7 @@ const DEFAULTS = {
   timeoutMin: 8,
   jevThreshold: 0.3,
   cooldownMin: 10,
+  summarizerModel: "sonnet",
 } as const;
 
 /** The plugin's options, read and defaulted. */
@@ -28,6 +29,8 @@ export type CouncilConfig = Readonly<{
   limitsDir: string;
   timeoutMs: number;
   summarizer: "claude" | "jev";
+  /** The model that writes the summary (an alias or a full id). */
+  summarizerModel: string;
   jevThreshold: number;
   typesafeApiKey: string;
   autoReview: "notify" | "off";
@@ -67,6 +70,8 @@ export const configOf = (options: PluginOptions): CouncilConfig => ({
     numberOf(options["timeoutMin"], DEFAULTS.timeoutMin) * MINUTE_MS,
   ),
   summarizer: options["summarizer"] === "jev" ? "jev" : "claude",
+  summarizerModel:
+    stringOf(options["summarizerModel"], "").trim() || DEFAULTS.summarizerModel,
   jevThreshold: numberOf(options["jevThreshold"], DEFAULTS.jevThreshold),
   typesafeApiKey: stringOf(options["typesafeApiKey"], ""),
   autoReview: options["autoReview"] === "notify" ? "notify" : "off",

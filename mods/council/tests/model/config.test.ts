@@ -9,6 +9,7 @@ describe("config", () => {
       limitsDir: "~/.local/state/executor-limits",
       timeoutMs: 480_000,
       summarizer: "claude",
+      summarizerModel: "sonnet",
       jevThreshold: 0.3,
       typesafeApiKey: "",
       autoReview: "off",
@@ -43,5 +44,10 @@ describe("config", () => {
         autoReview: "notify",
       },
     );
+  });
+
+  test("the summarizer's model is an option; empty is the default", () => {
+    expect(configOf({ summarizerModel: "opus" }).summarizerModel).toBe("opus");
+    expect(configOf({ summarizerModel: " " }).summarizerModel).toBe("sonnet");
   });
 });

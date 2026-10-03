@@ -3,7 +3,7 @@ import { fieldOf, parseJson } from "../json/parse-json.ts";
 import { whereOf } from "./summary.ts";
 
 /**
- * The owner's rule for one TypeSafe request (backlog doc-016), not an API
+ * The owner's calibration rule for one TypeSafe request (doc-016), not an API
  * limit: at most 9 questions and 14k characters.
  */
 export const JEV_MAX_QUESTIONS = 9;
