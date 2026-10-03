@@ -7,6 +7,8 @@ export type ReviewInput = Readonly<{ diff: string; question?: string }>;
 export type MemberCommand = Readonly<{
   argv: readonly string[];
   stdin?: string;
+  /** Text to write to the prompt file the argv names, before the start. */
+  promptFile?: string;
 }>;
 
 /** What a reviewer without a review mode of its own must print. */
@@ -44,14 +46,24 @@ const codexOf = (input: ReviewInput): MemberCommand =>
 
 const OCR = ["ocr", "review", "--format", "json", "--audience", "agent"];
 
-const COMMANDS: Readonly<
-  Record<CouncilMemberName, (input: ReviewInput) => MemberCommand>
-> = {
+type CommandOf = (input: ReviewInput, promptPath: string) => MemberCommand;
+
+// Pi and Devin read the prompt from a file: a diff of 200 KB is past what
+// one argument may hold on Linux (128 KB).
+const COMMANDS: Readonly<Record<CouncilMemberName, CommandOf>> = {
   codex: codexOf,
-  pi: (input) => ({
-    argv: ["pi", "-p", "--no-session", "--no-tools", promptOf(input)],
+  pi: (input, promptPath) => ({
+    argv: [
+      "pi",
+      "-p",
+      "--no-session",
+      "--no-tools",
+      `@${promptPath}`,
+      "Review the diff in the attached file; its first lines say how to answer.",
+    ],
+    promptFile: promptOf(input),
   }),
-  devin: (input) => ({
+  devin: (input, promptPath) => ({
     // Stated every time: a user's DEVIN_PERMISSION_MODE may say `dangerous`.
     argv: [
       "devin",
@@ -59,9 +71,11 @@ const COMMANDS: Readonly<
       "auto",
       "--respect-workspace-trust",
       "false",
+      "--prompt-file",
+      promptPath,
       "-p",
-      promptOf(input),
     ],
+    promptFile: promptOf(input),
   }),
   ocr: (input) => ({
     argv:
@@ -75,9 +89,11 @@ const COMMANDS: Readonly<
  * How to start one member on the input.
  * @param name the member
  * @param input the diff and the owner's question
- * @returns its argv and standard input
+ * @param promptPath where a member that reads its prompt from a file finds it
+ * @returns its argv, standard input and prompt file's text
  */
 export const commandOf = (
   name: CouncilMemberName,
   input: ReviewInput,
-): MemberCommand => COMMANDS[name](input);
+  promptPath: string,
+): MemberCommand => COMMANDS[name](input, promptPath);

@@ -3,49 +3,64 @@ import { describe, expect, test } from "claude-code/testing";
 import { commandOf, promptOf } from "../../hooks/model/members.ts";
 
 const DIFF = "diff --git a/x b/x\n+1";
+const FILE = "/scratch/council-pi-1.md";
 
 describe("members", () => {
   test("codex reviews the uncommitted tree, ephemeral", () => {
-    expect(commandOf("codex", { diff: DIFF })).toEqual({
+    expect(commandOf("codex", { diff: DIFF }, FILE)).toEqual({
       argv: ["codex", "exec", "review", "--uncommitted", "--ephemeral"],
     });
   });
 
   test("codex with a question reads it, and the diff, from stdin", () => {
-    const run = commandOf("codex", { diff: DIFF, question: "is it safe?" });
+    const run = commandOf(
+      "codex",
+      { diff: DIFF, question: "is it safe?" },
+      FILE,
+    );
 
     expect(run.argv).toEqual(["codex", "exec", "review", "--ephemeral", "-"]);
     expect(run.stdin).toContain("is it safe?");
     expect(run.stdin).toContain(DIFF);
   });
 
-  test("pi: print mode, no session kept, no tools at all", () => {
-    const run = commandOf("pi", { diff: DIFF });
+  test("pi: the prompt rides as an attached file, no tools", () => {
+    const run = commandOf("pi", { diff: DIFF }, FILE);
 
-    expect(run.argv.slice(0, -1)).toEqual([
+    expect(run.argv).toEqual([
       "pi",
       "-p",
       "--no-session",
       "--no-tools",
+      `@${FILE}`,
+      "Review the diff in the attached file; its first lines say how to answer.",
     ]);
-    expect(run.argv.at(-1)).toBe(promptOf({ diff: DIFF }));
+    expect(run.promptFile).toBe(promptOf({ diff: DIFF }));
   });
 
-  test("devin: read-only auto-approval, always stated", () => {
-    const run = commandOf("devin", { diff: DIFF });
+  test("devin: read-only auto-approval, always stated; a prompt file", () => {
+    const run = commandOf("devin", { diff: DIFF }, FILE);
 
-    expect(run.argv.slice(0, -1)).toEqual([
+    expect(run.argv).toEqual([
       "devin",
       "--permission-mode",
       "auto",
       "--respect-workspace-trust",
       "false",
+      "--prompt-file",
+      FILE,
       "-p",
     ]);
+    expect(run.promptFile).toBe(promptOf({ diff: DIFF }));
+  });
+
+  test("codex and ocr need no prompt file", () => {
+    expect(commandOf("codex", { diff: DIFF }, FILE).promptFile).toBeUndefined();
+    expect(commandOf("ocr", { diff: DIFF }, FILE).promptFile).toBeUndefined();
   });
 
   test("ocr: JSON for agents; a question rides as background", () => {
-    expect(commandOf("ocr", { diff: DIFF }).argv).toEqual([
+    expect(commandOf("ocr", { diff: DIFF }, FILE).argv).toEqual([
       "ocr",
       "review",
       "--format",
@@ -53,7 +68,9 @@ describe("members", () => {
       "--audience",
       "agent",
     ]);
-    expect(commandOf("ocr", { diff: DIFF, question: "why?" }).argv).toEqual([
+    expect(
+      commandOf("ocr", { diff: DIFF, question: "why?" }, FILE).argv,
+    ).toEqual([
       "ocr",
       "review",
       "--format",
