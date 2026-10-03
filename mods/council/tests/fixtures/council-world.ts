@@ -52,6 +52,10 @@ export function councilWorld(
     replies?: string[];
     jev?: (body: string) => { status: number; text: string };
     env?: Record<string, string>;
+    /** `git diff HEAD` answers this late, on the mocked clock. */
+    diffDelayMs?: number;
+    /** `$.model.complete` rejects, as for a model the client blocks. */
+    completeRejects?: true;
   } = {},
 ): { kept: Kept; clock: MockClock } {
   const kept: Kept = {
@@ -98,7 +102,7 @@ export function councilWorld(
     kept.submitted.push(e.text);
     return { text: e.text };
   });
-  on("process.run", (_engine, e) => {
+  on("process.run", async (_engine, e) => {
     kept.runs.push(e);
     const [bin, word] = e.argv;
     if (bin === "rm") {
@@ -118,10 +122,22 @@ export function councilWorld(
         },
       };
     }
+    if (word === "diff" && script.diffDelayMs !== undefined) {
+      await clock.sleep(script.diffDelayMs);
+    }
+    const names = Object.keys(script.untracked ?? {});
+    // Without -z git quotes a name that is not plain ASCII, as core.quotePath.
+    const listed = e.argv.includes("-z")
+      ? names.map((name) => `${name}\0`).join("")
+      : names
+          .map((name) =>
+            /^[\u{20}-\u{7E}]*$/u.test(name) ? name : `"${name}?"`,
+          )
+          .join("\n");
     const stdout =
       word === "diff"
         ? (script.diff ?? "diff --git a/x b/x\n+changed\n")
-        : Object.keys(script.untracked ?? {}).join("\n");
+        : listed;
     return {
       value: {
         exitCode: 0,
@@ -171,6 +187,9 @@ export function councilWorld(
     return { value: { code: output.code ?? 0, signal: null } };
   });
   on("model.complete", (_engine, e) => {
+    if (script.completeRejects === true) {
+      throw new Error(`model ${e.model} is not allowed`);
+    }
     kept.prompts.push(e.prompt);
     kept.models.push(e.model);
     const text = replies.shift();

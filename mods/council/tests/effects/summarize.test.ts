@@ -65,6 +65,24 @@ describe("summarize", () => {
     },
   );
 
+  test("a rejected completion still ends the run, with the raw findings", async ($, on) => {
+    const world = councilWorld(on, {
+      installed: TWO,
+      outputs: OUTPUTS,
+      completeRejects: true,
+    });
+
+    await $.session.start(SESSION);
+    await $.command.run(councilCommand());
+    await world.clock.settle();
+
+    expect(world.kept.toasts.at(-1)).toBe(
+      "council: 4 findings — /council status",
+    );
+    const next = await $.command.run(councilCommand());
+    expect(next.text).toContain("reviewing the working diff");
+  });
+
   test("Claude not answering: the same fallback", async ($, on) => {
     const world = councilWorld(on, { installed: TWO, outputs: OUTPUTS });
 

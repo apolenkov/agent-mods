@@ -1,6 +1,7 @@
 import { describe, expect, test } from "claude-code/testing";
 
 import { ANSWERED_TURN } from "../fixtures/answered-turn.ts";
+import { councilCommand } from "../fixtures/council-command.ts";
 import { councilWorld } from "../fixtures/council-world.ts";
 import { SESSION } from "../fixtures/session.ts";
 import { TYPED_PROMPT } from "../fixtures/typed-prompt.ts";
@@ -103,4 +104,62 @@ describe("auto-review", () => {
 
     expect(world.kept.spawns, "after the cooldown").toHaveLength(6);
   });
+
+  test(
+    "a skipped attempt is not a review: the diff runs once members free up",
+    NOTIFY,
+    async ($, on) => {
+      const world = councilWorld(on, {
+        installed: ["codex", "pi"],
+        limits: { pi: "1800000100" },
+      });
+      on("turn.complete", (_engine, e) => ({ text: e.answer }));
+
+      await $.session.start(SESSION);
+      await $.turn.complete(ANSWERED_TURN);
+      await world.clock.advance(IDLE_MS);
+
+      expect(world.kept.spawns, "pi is limited: nothing run").toEqual([]);
+
+      await world.clock.advance(100_000);
+      await $.turn.complete(ANSWERED_TURN);
+      await world.clock.advance(IDLE_MS);
+
+      expect(world.kept.spawns).toHaveLength(2);
+    },
+  );
+
+  test(
+    "a manual run started while the auto-review reads the diff wins alone",
+    NOTIFY,
+    async ($, on) => {
+      const world = councilWorld(on, { diffDelayMs: 1000 });
+      on("turn.complete", (_engine, e) => ({ text: e.answer }));
+
+      await $.session.start(SESSION);
+      await $.turn.complete(ANSWERED_TURN);
+      await world.clock.advance(IDLE_MS);
+      await $.command.run(councilCommand());
+      await world.clock.advance(2000);
+
+      expect(world.kept.spawns).toHaveLength(3);
+    },
+  );
+
+  test(
+    "a prompt while the auto-review reads the diff still cancels it",
+    NOTIFY,
+    async ($, on) => {
+      const world = councilWorld(on, { diffDelayMs: 1000 });
+      on("turn.complete", (_engine, e) => ({ text: e.answer }));
+
+      await $.session.start(SESSION);
+      await $.turn.complete(ANSWERED_TURN);
+      await world.clock.advance(IDLE_MS);
+      await $.prompt.submit(TYPED_PROMPT);
+      await world.clock.advance(2000);
+
+      expect(world.kept.spawns).toEqual([]);
+    },
+  );
 });

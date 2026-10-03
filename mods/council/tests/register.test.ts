@@ -206,6 +206,35 @@ describe("register", () => {
     expect(world.kept.removed.toSorted(byText)).toEqual(paths.toSorted(byText));
   });
 
+  test("untracked names that are not ASCII are read as git lists them with -z", async ($, on) => {
+    const world = councilWorld(on, {
+      diff: "",
+      untracked: { "docs/über.md": "hello\n" },
+    });
+
+    await $.session.start(SESSION);
+    await $.command.run(councilCommand("q"));
+    await world.clock.settle();
+
+    expect(world.kept.written[0]?.text).toContain("+++ b/docs/über.md");
+  });
+
+  test("a run cut by a reload is marked interrupted at the next start", async ($, on) => {
+    const world = councilWorld(on, {
+      outputs: { codex: { stdout: "", hangs: true } },
+    });
+
+    await $.session.start(SESSION);
+    await $.command.run(councilCommand());
+    await world.clock.settle();
+    await $.session.start(SESSION);
+
+    const again = await $.command.run(councilCommand("status"));
+    expect(again.text).toBe("Council pane opened.");
+    const rerun = await $.command.run(councilCommand());
+    expect(rerun.text).toContain("reviewing the working diff");
+  });
+
   test("/council status opens the pane", async ($, on) => {
     const world = councilWorld(on);
 
