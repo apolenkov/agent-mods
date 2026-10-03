@@ -80,12 +80,15 @@ const emptyWhenAbsent = (value: unknown): readonly [] | undefined =>
 const itemsOf = (value: unknown): readonly CouncilSummaryItem[] | undefined =>
   isItemList(value) ? value : emptyWhenAbsent(value);
 
+const SECTIONS = ["agreements", "disagreements", "unique", "notes"] as const;
+
 const summaryOf = (value: unknown): CouncilSummary | undefined => {
   const agreements = itemsOf(fieldOf(value, "agreements"));
   const disagreements = itemsOf(fieldOf(value, "disagreements"));
   const unique = itemsOf(fieldOf(value, "unique"));
   const notes = fieldOf(value, "notes") ?? [];
-  return typeof value === "object" &&
+  const hasSection = SECTIONS.some((key) => fieldOf(value, key) !== undefined);
+  return hasSection &&
     agreements !== undefined &&
     disagreements !== undefined &&
     unique !== undefined &&

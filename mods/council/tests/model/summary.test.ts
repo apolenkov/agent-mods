@@ -34,6 +34,11 @@ describe("summary", () => {
     ).toBeUndefined();
   });
 
+  test("JSON with no summary field is no summary", () => {
+    expect(parseSummary('{"error":"not enough context"}')).toBeUndefined();
+    expect(parseSummary("{}")).toBeUndefined();
+  });
+
   test("missing sections read as empty", () => {
     expect(parseSummary('{"unique":[{"members":["pi"],"text":"x"}]}')).toEqual({
       agreements: [],
