@@ -86,6 +86,16 @@ describe("jev", () => {
     ).toEqual([0, 0, 2, 0]);
   });
 
+  test("no answer, a blank or a bad reference: a cluster of its own", () => {
+    expect(
+      clustersOf(5, {
+        same_2: { choice: "" },
+        same_3: { choice: "#3" },
+        same_4: { choice: "#x" },
+      }),
+    ).toEqual([0, 1, 2, 3, 4]);
+  });
+
   test("agreement, contradiction, unique and noise", () => {
     const groups = groupsOf(FINDINGS, [0, 0, 2]);
     const contra = contradictionRequests(groups, "jev-latest");

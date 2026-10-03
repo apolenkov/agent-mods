@@ -186,13 +186,19 @@ export const answersOf = (text: string): JevAnswers => {
   );
 };
 
+const EARLIER = /^#(\d+)$/u;
+
+// Only an explicit "#k" naming an earlier finding merges; anything else
+// (no answer, a blank, "new", a bad reference) stands alone.
 const rootOf = (
   index: number,
   roots: readonly number[],
   answers: JevAnswers,
-): number =>
-  roots[Number((answers[`same_${String(index)}`]?.choice ?? "").slice(1))] ??
-  index;
+): number => {
+  const picked = EARLIER.exec(answers[`same_${String(index)}`]?.choice ?? "");
+  const earlier = Number(picked?.[1] ?? index);
+  return earlier < index ? (roots[earlier] ?? index) : index;
+};
 
 const rootsFrom = (
   count: number,
