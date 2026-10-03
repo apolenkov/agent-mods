@@ -81,8 +81,9 @@ const spawnOf = async (
   ]);
   timeout.cancel();
   if (ended === "timeout") {
-    // Leaving the stream kills the child.
-    await stream.return(undefined as never);
+    // Leaving the stream kills the child; not awaited, as a pending read
+    // would hold the return behind it.
+    void stream.return(undefined as never);
   }
   return ended;
 };

@@ -26,6 +26,8 @@ interface Output {
   stderr?: string;
   code?: number;
   hangs?: true;
+  /** The child cannot start: the stream's first pull rejects with this. */
+  startError?: string;
 }
 
 /**
@@ -141,10 +143,15 @@ export function councilWorld(
     const output = script.outputs?.[e.argv[0] as CouncilMemberName] ?? {
       stdout: "NO_FINDINGS\n",
     };
+    if (output.startError !== undefined) {
+      throw new Error(output.startError);
+    }
     if (output.hangs === true) {
       await clock.sleep(3_600_000);
     }
-    yield { stream: "stdout" as const, text: output.stdout };
+    if (output.stdout !== "") {
+      yield { stream: "stdout" as const, text: output.stdout };
+    }
     if (output.stderr !== undefined) {
       yield { stream: "stderr" as const, text: output.stderr };
     }
