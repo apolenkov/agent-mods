@@ -1,0 +1,19 @@
+{
+  "name": "claude-mods",
+  "owner": { "name": "apolenkov", "url": "https://github.com/apolenkov" },
+  "metadata": {
+    "description": "Claude Code mods: see what your shells and runners are doing, and get a council of independent reviewers before you call it done."
+  },
+  "plugins": [
+    {
+      "name": "shell-flow",
+      "source": "./mods/shell-flow",
+      "description": "Live view of every Bash call, background task and external agent run of the session: elapsed time, output freshness, errors."
+    },
+    {
+      "name": "council",
+      "source": "./mods/council",
+      "description": "/council and an auto-review nudge: Codex, Pi, Devin and OpenCodeReview review your diff in parallel; one summary of agreements, disagreements and unique findings."
+    }
+  ]
+}
