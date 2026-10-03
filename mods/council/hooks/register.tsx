@@ -7,7 +7,7 @@ import type {
 import { atom, read, update } from "claude-code";
 
 import { councilCommand, sendSummary, startRun } from "./effects/command.ts";
-import { autoReview } from "./effects/council.ts";
+import { autoReview, interruptStale } from "./effects/council.ts";
 import type { Host } from "./effects/host.ts";
 import { configOf, type CouncilConfig } from "./model/config.ts";
 import { paneView } from "./view/pane.tsx";
@@ -127,6 +127,8 @@ export const register: Register = (on, options) => {
         "Independent reviewers on the working diff, one summary (send, status)",
       argumentHint: "[question | send | status]",
     });
+    // A reload keeps $.state but drops the old timers and children.
+    await interruptStale(hostOf($));
     return next(e);
   });
 
