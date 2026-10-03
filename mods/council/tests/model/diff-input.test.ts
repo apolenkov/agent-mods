@@ -10,6 +10,9 @@ describe("diff-input", () => {
   test("secret-looking names are never sent", () => {
     expect(isSentUntracked(".env")).toBe(false);
     expect(isSentUntracked("config/.env.local")).toBe(false);
+    expect(isSentUntracked(".envrc")).toBe(false);
+    expect(isSentUntracked("deploy/.env-production")).toBe(false);
+    expect(isSentUntracked("src/my.environment.ts")).toBe(true);
     expect(isSentUntracked("certs/server.pem")).toBe(false);
     expect(isSentUntracked("id.key")).toBe(false);
     expect(isSentUntracked("src/client_secret.json")).toBe(false);

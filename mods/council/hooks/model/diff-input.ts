@@ -1,6 +1,5 @@
 /** Untracked files whose names look like secrets: never read, never sent. */
-const SECRET_NAME =
-  /(?:^|\/)\.env(?:\.[^/]*)?$|\.(?:pem|key)$|secret|credential/iu;
+const SECRET_NAME = /(?:^|\/)\.env[^/]*$|\.(?:pem|key)$|secret|credential/iu;
 
 /**
  * Whether an untracked file may be read and sent to the reviewers.
