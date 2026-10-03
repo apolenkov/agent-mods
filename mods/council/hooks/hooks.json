@@ -1,0 +1,4 @@
+{
+  "description": "The council: /council, its pane and status line, and the auto-review that runs after an answered turn and only notifies",
+  "modules": ["./register.tsx"]
+}

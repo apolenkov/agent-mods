@@ -1,0 +1,71 @@
+{
+  "name": "council",
+  "version": "0.1.0",
+  "description": "A council of independent code reviewers (Codex, Pi, Devin, OpenCodeReview) runs over your working diff in parallel; one summary of agreements, disagreements and unique findings. /council, plus an auto-review that only notifies.",
+  "author": { "name": "apolenkov" },
+  "repository": "https://github.com/apolenkov/claude-mods",
+  "license": "MIT",
+  "keywords": ["code-review", "council", "codex", "pi", "devin", "ocr", "jev"],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "members": {
+      "type": "string",
+      "title": "Members",
+      "description": "Comma list of reviewers to use, in order (codex, pi, devin, ocr). Empty: every installed one.",
+      "required": false,
+      "default": ""
+    },
+    "limitsDir": {
+      "type": "string",
+      "title": "Limits folder",
+      "description": "Folder of per-member files holding the epoch (seconds) a usage limit resets; a member with a future epoch is skipped. Read only; missing files are ignored.",
+      "required": false,
+      "default": "~/.local/state/executor-limits"
+    },
+    "timeoutMin": {
+      "type": "number",
+      "title": "Member timeout (minutes)",
+      "description": "How long one reviewer may run before it is stopped.",
+      "required": false,
+      "default": 8
+    },
+    "summarizer": {
+      "type": "string",
+      "title": "Summarizer",
+      "description": "\"claude\" (default): the session's Claude merges the findings. \"jev\": TypeSafe Jev scores duplicates, noise and contradictions (needs TYPESAFE_API_KEY), Claude writes the prose.",
+      "required": false,
+      "default": "claude",
+      "options": ["claude", "jev"]
+    },
+    "typesafeApiKey": {
+      "type": "string",
+      "title": "TypeSafe API key",
+      "description": "For the jev summarizer; kept in secure storage. Empty: the TYPESAFE_API_KEY environment variable.",
+      "required": false,
+      "sensitive": true,
+      "default": ""
+    },
+    "jevThreshold": {
+      "type": "number",
+      "title": "Jev noise threshold",
+      "description": "Findings Jev rates below this probability of being a real defect move to notes (0 to 1).",
+      "required": false,
+      "default": 0.3
+    },
+    "autoReview": {
+      "type": "string",
+      "title": "Auto-review",
+      "description": "\"off\" (default): only /council runs the council. \"notify\": once the session is idle after an answered turn with a changed diff, the council runs and only notifies you (the members' CLIs may cost you money).",
+      "required": false,
+      "default": "off",
+      "options": ["notify", "off"]
+    },
+    "cooldownMin": {
+      "type": "number",
+      "title": "Auto-review cooldown (minutes)",
+      "description": "The least time between two auto-reviews.",
+      "required": false,
+      "default": 10
+    }
+  }
+}

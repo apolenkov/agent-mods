@@ -10,7 +10,8 @@ describe("config", () => {
       timeoutMs: 480_000,
       summarizer: "claude",
       jevThreshold: 0.3,
-      autoReview: "notify",
+      typesafeApiKey: "",
+      autoReview: "off",
       cooldownMs: 600_000,
     });
   });
@@ -34,11 +35,13 @@ describe("config", () => {
   test("pickers outside their options fall back", () => {
     expect(configOf({ summarizer: "gpt", autoReview: "loud" })).toMatchObject({
       summarizer: "claude",
-      autoReview: "notify",
-    });
-    expect(configOf({ summarizer: "jev", autoReview: "off" })).toMatchObject({
-      summarizer: "jev",
       autoReview: "off",
     });
+    expect(configOf({ summarizer: "jev", autoReview: "notify" })).toMatchObject(
+      {
+        summarizer: "jev",
+        autoReview: "notify",
+      },
+    );
   });
 });

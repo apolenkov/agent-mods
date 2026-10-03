@@ -29,6 +29,7 @@ export type CouncilConfig = Readonly<{
   timeoutMs: number;
   summarizer: "claude" | "jev";
   jevThreshold: number;
+  typesafeApiKey: string;
   autoReview: "notify" | "off";
   cooldownMs: number;
 }>;
@@ -67,7 +68,8 @@ export const configOf = (options: PluginOptions): CouncilConfig => ({
   ),
   summarizer: options["summarizer"] === "jev" ? "jev" : "claude",
   jevThreshold: numberOf(options["jevThreshold"], DEFAULTS.jevThreshold),
-  autoReview: options["autoReview"] === "off" ? "off" : "notify",
+  typesafeApiKey: stringOf(options["typesafeApiKey"], ""),
+  autoReview: options["autoReview"] === "notify" ? "notify" : "off",
   cooldownMs:
     numberOf(options["cooldownMin"], DEFAULTS.cooldownMin) * MINUTE_MS,
 });

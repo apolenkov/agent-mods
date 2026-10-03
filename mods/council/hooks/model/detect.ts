@@ -2,12 +2,12 @@ import type { CouncilMemberName } from "../../types/index.d.ts";
 import { MEMBER_NAMES } from "./config.ts";
 
 /** What each member's `--version` prints first, as checked on 2026-10-04. */
-const SIGNATURES: Readonly<Record<CouncilMemberName, RegExp>> = {
+const SIGNATURES = {
   codex: /^codex-cli \d/mu,
   pi: /^\d+\.\d+\.\d+\s*$/mu,
   devin: /^devin \d/mu,
   ocr: /^open-code-review v\d/mu,
-};
+} as const;
 
 /**
  * Whether a `--version` output is that member's own, not another tool of

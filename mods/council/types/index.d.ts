@@ -64,6 +64,11 @@ export type CouncilReviewed = Readonly<{ hash: string; at: number }>;
 
 declare module "claude-code" {
   interface PluginState {
-    council: { run: CouncilRun; reviewed: CouncilReviewed };
+    council: {
+      run: CouncilRun;
+      reviewed: CouncilReviewed;
+      /** Bumped by every prompt: an auto-review waiting on an older one is dropped. */
+      autoToken: number;
+    };
   }
 }
