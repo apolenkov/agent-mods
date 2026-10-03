@@ -70,7 +70,7 @@ export type Host = Readonly<{
   /** Reads the run (`read($, RUN)`). */
   readRun: () => Promise<CouncilRun>;
   /** Changes the run (`update($, RUN, change)`). */
-  updateRun: (change: (run: CouncilRun) => CouncilRun) => Promise<unknown>;
+  updateRun: (change: (run: CouncilRun) => CouncilRun) => Promise<CouncilRun>;
   /** Reads the last review (`read($, REVIEWED)`). */
   readReviewed: () => Promise<CouncilReviewed>;
   /** Writes the last review. */

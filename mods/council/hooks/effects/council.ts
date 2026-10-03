@@ -17,35 +17,64 @@ export type CouncilRequest = Readonly<{
 
 const MIN_MEMBERS = 2;
 
+const isRunBusy = (run: CouncilRun): boolean =>
+  run.phase === "running" || run.phase === "summarizing";
+
 /**
- * Whether a run is under way (single flight for the whole council).
+ * Takes the council for a run, unless one is under way (single flight for
+ * the whole council): the check and the write are one conditional update,
+ * so of two entry points racing, one wins.
  * @param host the engine
- * @returns true while members run or the summary is written
+ * @param request the question and whether it is automatic
+ * @returns whether this caller holds the council now
  */
-export const isBusy = async (host: Host): Promise<boolean> => {
-  const { phase } = await host.readRun();
-  return phase === "running" || phase === "summarizing";
+export const canClaim = async (
+  host: Host,
+  request: CouncilRequest,
+): Promise<boolean> => {
+  const id = crypto.randomUUID();
+  const startedAt = await host.now();
+  const run = await host.updateRun((current): CouncilRun =>
+    isRunBusy(current)
+      ? current
+      : {
+          id,
+          phase: "running",
+          startedAt,
+          isAuto: request.isAuto,
+          members: [],
+          ...(request.question !== undefined && {
+            question: request.question,
+          }),
+        },
+  );
+  if (run.id === id) {
+    host.status("council: reviewing…");
+  }
+  return run.id === id;
 };
 
 /**
- * Takes the council for a run: the last summary is replaced.
+ * Ends a run a reload cut short: the old environment's timers and children
+ * are gone, so nothing will finish it.
  * @param host the engine
- * @param request the question and whether it is automatic
  * @returns once written
  */
-export const claim = async (
-  host: Host,
-  request: CouncilRequest,
-): Promise<void> => {
-  const startedAt = await host.now();
-  await host.updateRun((): CouncilRun => ({
-    phase: "running",
-    startedAt,
-    isAuto: request.isAuto,
-    members: [],
-    ...(request.question !== undefined && { question: request.question }),
-  }));
-  host.status("council: reviewing…");
+export const interruptStale = async (host: Host): Promise<void> => {
+  await host.updateRun((run): CouncilRun =>
+    isRunBusy(run)
+      ? {
+          ...run,
+          phase: "done",
+          note: "interrupted (the plugin reloaded); /council runs it again.",
+          members: run.members.map((member) =>
+            member.status === "running" || member.status === "waiting"
+              ? { ...member, status: "failed", reason: "interrupted" }
+              : member,
+          ),
+        }
+      : run,
+  );
 };
 
 const finishWithNote = async (host: Host, note: string): Promise<void> => {
@@ -65,17 +94,17 @@ const tooFew = (members: readonly CouncilMember[]): string => {
   return `${String(ready.length)} reviewer(s) can run (${list}); the council needs ${String(MIN_MEMBERS)}. Nothing was run.`;
 };
 
-const reviewWith = async (
+const hasReviewedWith = async (
   host: Host,
   config: CouncilConfig,
   input: Readonly<{ diff: string; question?: string }>,
-): Promise<void> => {
+): Promise<boolean> => {
   const members = await detectMembers(host, config);
   await host.updateRun((run): CouncilRun => ({ ...run, members }));
   const runnable = members.filter((member) => member.status === "waiting");
   if (runnable.length < MIN_MEMBERS) {
     await finishWithNote(host, tooFew(members));
-    return;
+    return false;
   }
   await Promise.all(
     runnable.map(({ name }) =>
@@ -100,10 +129,11 @@ const reviewWith = async (
   const count = itemCount(summary);
   host.status(`council: ${String(count)} findings`);
   host.toast(`council: ${String(count)} findings — /council status`);
+  return true;
 };
 
 /**
- * One run, after `claim`: the diff, the members, their reviews in
+ * One run, after `canClaim`: the diff, the members, their reviews in
  * parallel, the summary. Called from a `$.clock.after` callback, never
  * awaited by a hook; the long `$` calls inside do not count against any
  * hook's budget.
@@ -117,18 +147,34 @@ export const convene = async (
   config: CouncilConfig,
   request: CouncilRequest,
 ): Promise<void> => {
+  try {
+    await reviewDiff(host, config, request);
+  } catch (error) {
+    // Never leave the council busy: a failed run is a finished one.
+    const why = error instanceof Error ? error.message : String(error);
+    await finishWithNote(host, `the run failed: ${why}`);
+  }
+};
+
+const reviewDiff = async (
+  host: Host,
+  config: CouncilConfig,
+  request: CouncilRequest,
+): Promise<void> => {
   const diff = request.diff ?? (await workingDiff(host));
   if (diff.trim() === "") {
     await finishWithNote(host, "nothing to review: the working tree is clean.");
     return;
   }
   const hash = await hashOf(diff);
-  await reviewWith(host, config, {
+  const hasReviewed = await hasReviewedWith(host, config, {
     diff,
     ...(request.question !== undefined && { question: request.question }),
   });
-  const at = await host.now();
-  await host.writeReviewed({ hash, at });
+  // Only a review that ran counts: a skipped one may run once members free up.
+  if (hasReviewed) {
+    await host.writeReviewed({ hash, at: await host.now() });
+  }
 };
 
 /**
@@ -149,15 +195,18 @@ export const autoReview = async (
   const now = await host.now();
   const isStale =
     (await host.readToken()) !== token ||
-    (await isBusy(host)) ||
+    isRunBusy(await host.readRun()) ||
     (reviewed.at > 0 && now - reviewed.at < config.cooldownMs);
   if (isStale) {
     return;
   }
   const diff = await workingDiff(host);
-  if (diff.trim() === "" || (await hashOf(diff)) === reviewed.hash) {
-    return;
+  const isWanted =
+    diff.trim() !== "" &&
+    (await hashOf(diff)) !== reviewed.hash &&
+    // A prompt while the diff was read still cancels the run.
+    (await host.readToken()) === token;
+  if (isWanted && (await canClaim(host, { isAuto: true }))) {
+    await convene(host, config, { isAuto: true, diff });
   }
-  await claim(host, { isAuto: true });
-  await convene(host, config, { isAuto: true, diff });
 };

@@ -1,6 +1,6 @@
 import type { CouncilConfig } from "../model/config.ts";
 import { sendText } from "../model/summary.ts";
-import { claim, convene, isBusy } from "./council.ts";
+import { canClaim, convene } from "./council.ts";
 import type { Host } from "./host.ts";
 
 /**
@@ -34,14 +34,13 @@ export const startRun = async (
   config: CouncilConfig,
   question: string | undefined,
 ): Promise<string> => {
-  if (await isBusy(host)) {
-    return "The council is already reviewing; /council status shows it.";
-  }
   const request = {
     isAuto: false,
     ...(question !== undefined && { question }),
   };
-  await claim(host, request);
+  if (!(await canClaim(host, request))) {
+    return "The council is already reviewing; /council status shows it.";
+  }
   await host.openPane();
   host.after(0, () => {
     void convene(host, config, request);

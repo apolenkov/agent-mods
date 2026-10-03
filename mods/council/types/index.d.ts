@@ -49,6 +49,8 @@ export type CouncilPhase = "idle" | "running" | "summarizing" | "done";
 
 /** The last (or current) run of the council. */
 export type CouncilRun = Readonly<{
+  /** Who claimed the run: a claim that finds another id lost the race. */
+  id?: string;
   phase: CouncilPhase;
   startedAt?: number;
   question?: string;
