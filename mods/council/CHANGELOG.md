@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.2.0](https://github.com/apolenkov/claude-mods/compare/council-v0.1.0...council-v0.2.0) (2026-10-04)
+
+
+### Features
+
+* **council:** find running background bash tasks in the transcript ([54ecd46](https://github.com/apolenkov/claude-mods/commit/54ecd46ecb81a29e94773f366c5aa7f3b00b57e3))
+
+
+### Bug Fixes
+
+* **council:** /council cancel, and a status line that clears once seen ([ff0a2d3](https://github.com/apolenkov/claude-mods/commit/ff0a2d3f9a06ddc6ac1fe4e1337f2eb2f617d8a2))
+* **council:** a run outliving its module never leaves an unhandled rejection ([78d745f](https://github.com/apolenkov/claude-mods/commit/78d745f1846a8d9ee9fe6e7510fd067de64ae07b))
+* **council:** a run writes only to the run it claimed ([8370c9e](https://github.com/apolenkov/claude-mods/commit/8370c9e338ebf725e000feb798fb99ce27c1d19e))
+* **council:** a running background bash task holds the auto-review back ([3b5429d](https://github.com/apolenkov/claude-mods/commit/3b5429d1c9b40c557f7fe2659421d4e6b4c957df))
+* **council:** a stopped task has ended; a stuck notice does not end one ([cf6f6a0](https://github.com/apolenkov/claude-mods/commit/cf6f6a0c1ea2e3aa78d03b8647e1c3589b3aeb8f))
+* **council:** drop the own council: prefix from status and toasts ([54be3ab](https://github.com/apolenkov/claude-mods/commit/54be3abe8a1e42a801c9ffdeb2a49b976793a11f))
+* **council:** no auto-review while a subagent is still running ([4a1131c](https://github.com/apolenkov/claude-mods/commit/4a1131cf887d31ce701f7279a34f9a379f4ebd2d))
+* **council:** one finding is singular ([c615f8f](https://github.com/apolenkov/claude-mods/commit/c615f8facaadb7857999e553e65bb1478ae7a3cf))
+* **council:** stop a reviewer's timers when its stream rejects ([cf6c671](https://github.com/apolenkov/claude-mods/commit/cf6c67146fd33b5ad8b879c01962873e193b6c2e))
+
 ## 0.1.0 (2026-10-04)
 
 
