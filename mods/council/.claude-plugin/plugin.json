@@ -1,13 +1,21 @@
 {
   "name": "council",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A council of independent code reviewers (Codex, Pi, Devin, OpenCodeReview) runs over your working diff in parallel; one summary of agreements, disagreements and unique findings. /council, plus an auto-review that only notifies.",
   "author": {
     "name": "apolenkov"
   },
   "repository": "https://github.com/apolenkov/claude-mods",
   "license": "MIT",
-  "keywords": ["code-review", "council", "codex", "pi", "devin", "ocr", "jev"],
+  "keywords": [
+    "code-review",
+    "council",
+    "codex",
+    "pi",
+    "devin",
+    "ocr",
+    "jev"
+  ],
   "types": "./types/index.d.ts",
   "userConfig": {
     "members": {
@@ -37,7 +45,10 @@
       "description": "\"claude\" (default): the session's Claude merges the findings. \"jev\": TypeSafe Jev scores duplicates, noise and contradictions (needs TYPESAFE_API_KEY), Claude writes the prose.",
       "required": false,
       "default": "claude",
-      "options": ["claude", "jev"]
+      "options": [
+        "claude",
+        "jev"
+      ]
     },
     "summarizerModel": {
       "type": "string",
@@ -81,7 +92,10 @@
       "description": "\"off\" (default): only /council runs the council. \"notify\": once the session is idle after an answered turn with a changed diff, the council runs and only notifies you (the members' CLIs may cost you money).",
       "required": false,
       "default": "off",
-      "options": ["notify", "off"]
+      "options": [
+        "notify",
+        "off"
+      ]
     },
     "cooldownMin": {
       "type": "number",
