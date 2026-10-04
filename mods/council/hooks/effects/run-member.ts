@@ -111,21 +111,25 @@ const spawnOf = async (
   });
   const timeout = timeoutOf(host, timeoutMs);
   const cancelled = cancelOf(host, runId);
-  const ended = await Promise.race([
-    pump(stream, { stdout: "", stderr: "" }, (text) =>
-      appendTail(host, { name, runId }, text),
-    ),
-    timeout.promise,
-    cancelled.promise,
-  ]);
-  timeout.cancel();
-  cancelled.cancel();
-  if (typeof ended === "string") {
-    // Leaving the stream kills the child; not awaited, as a pending read
-    // would hold the return behind it.
-    void stream.return(undefined as never);
+  try {
+    const ended = await Promise.race([
+      pump(stream, { stdout: "", stderr: "" }, (text) =>
+        appendTail(host, { name, runId }, text),
+      ),
+      timeout.promise,
+      cancelled.promise,
+    ]);
+    if (typeof ended === "string") {
+      // Leaving the stream kills the child; not awaited, as a pending read
+      // would hold the return behind it.
+      void stream.return(undefined as never);
+    }
+    return ended;
+  } finally {
+    // Also when the stream rejects (the child cannot start, or broke).
+    timeout.cancel();
+    cancelled.cancel();
   }
-  return ended;
 };
 
 // A name of its own per run, in the user's temp folder.

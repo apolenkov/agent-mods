@@ -1,4 +1,4 @@
-import { describe, expect, test } from "claude-code/testing";
+import { describe, expect, type Plugin, test } from "claude-code/testing";
 
 import { councilCommand } from "../fixtures/council-command.ts";
 import { councilWorld } from "../fixtures/council-world.ts";
@@ -6,6 +6,18 @@ import { PANE_PROPS } from "../fixtures/pane-props.ts";
 import { SESSION } from "../fixtures/session.ts";
 
 const TWO = ["codex", "pi"] as const;
+
+/** Toasts "tick" for each period of any plugin's `$.clock.every`. */
+const TICKS: Plugin = {
+  name: "ticks",
+  tier: "prepend",
+  register(on) {
+    on("clock.every", ($, e, next) => {
+      $.ui.toast("tick");
+      return next(e);
+    });
+  },
+};
 
 describe("run-member", () => {
   test(
@@ -80,4 +92,26 @@ describe("run-member", () => {
     expect(texts.join("\n")).toContain("pi: exit 2: no api key");
     expect(texts.join("\n")).toMatch(/devin .*cannot start: /u);
   });
+
+  test(
+    "a reviewer that cannot start leaves no timer behind",
+    { plugins: [TICKS] },
+    async ($, on) => {
+      const world = councilWorld(on, {
+        installed: TWO,
+        outputs: { codex: { stdout: "", startError: "spawn codex ENOENT" } },
+        replies: ['{"unique":[]}'],
+      });
+
+      await $.session.start(SESSION);
+      await $.command.run(councilCommand());
+      await world.clock.settle();
+      const ticks = (): number =>
+        world.kept.toasts.filter((text) => text === "tick").length;
+      const before = ticks();
+      await world.clock.advance(10_000);
+
+      expect(ticks() - before).toBe(0);
+    },
+  );
 });
