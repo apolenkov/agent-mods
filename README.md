@@ -26,15 +26,15 @@ screenshot), with the status line under it:
 ```
 ╭──────────────────────────────────────────────────────────────╮
 │ [ c clear ] [ q close ]                                      │
-│ [1 ▸] ◐ 0:51 output 1s ago  Count steps  [ s stop ]          │
+│ [ 1 ▸ ] ◐ 0:51 output 1s ago  Count steps  [ s stop ]        │
 │       bg · main · for i in $(seq 40); do echo step $i; sle…  │
 │       › step 26                                              │
-│ [2 ▸] ✗ 0:03 exit 2  Fail on purpose                         │
+│ [ 2 ▸ ] ✗ 0:03 exit 2  Fail on purpose                       │
 │       main · sleep 3; exit 2                                 │
-│ [3 ▸] ○ 0:00 denied  Show current directory and all files    │
+│ [ 3 ▸ ] ○ 0:00 denied  Show current directory and all files  │
 │       agent a189ac45c45566717 · pwd; ls -la                  │
 │       ○ Permission to use Bash has been denied.              │
-│ keys press the [buttons] · Esc → prompt                      │
+│ 1–9 open · c clear · q close · Esc → prompt                  │
 ╰──────────────────────────────────────────────────────────────╯
   ⚠ shell-flow: ✗ Fail on purpose exit 2 · +1 bg
 ```
