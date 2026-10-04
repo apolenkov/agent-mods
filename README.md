@@ -34,7 +34,7 @@ screenshot), with the status line under it:
 │ [3 ▸] ○ 0:00 denied  Show current directory and all files    │
 │       agent a189ac45c45566717 · pwd; ls -la                  │
 │       ○ Permission to use Bash has been denied.              │
-│ ctrl+x tab focus · 1–9 expand · c clear · s stop · q close   │
+│ keys press the [buttons] · Esc → prompt                      │
 ╰──────────────────────────────────────────────────────────────╯
   ⚠ shell-flow: ✗ Fail on purpose exit 2 · +1 bg
 ```
