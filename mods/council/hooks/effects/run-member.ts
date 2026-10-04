@@ -78,11 +78,17 @@ const cancelOf = (
 ): Readonly<{ promise: Promise<"cancelled">; cancel: () => void }> => {
   const fired = new AbortController();
   const timer = host.every(CANCEL_POLL_MS, () => {
-    void host.readRun().then((run) => {
-      if (run.id !== runId || run.phase !== "running") {
+    void host
+      .readRun()
+      .then((run) => {
+        if (run.id !== runId || run.phase !== "running") {
+          fired.abort();
+        }
+      })
+      // The module unloaded under the timer: nothing to watch any more.
+      .catch(() => {
         fired.abort();
-      }
-    });
+      });
   });
   return {
     promise: new Promise((resolve) => {
