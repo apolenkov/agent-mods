@@ -1,10 +1,11 @@
-# claude-mods
+# agent-watch
 
-[![ci](https://github.com/apolenkov/claude-mods/actions/workflows/ci.yml/badge.svg)](https://github.com/apolenkov/claude-mods/actions/workflows/ci.yml)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/apolenkov/claude-mods/badge)](https://scorecard.dev/viewer/?uri=github.com/apolenkov/claude-mods)
+[![ci](https://github.com/apolenkov/agent-watch/actions/workflows/ci.yml/badge.svg)](https://github.com/apolenkov/agent-watch/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/apolenkov/agent-watch/badge)](https://scorecard.dev/viewer/?uri=github.com/apolenkov/agent-watch)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A showcase marketplace of mods for [Claude Code](https://claude.com/claude-code).
+Watch and check the agents your [Claude Code](https://claude.com/claude-code) session delegates to.
+A showcase marketplace of mods.
 Each mod lives, is developed and is released in its own repository; this one
 only lists them. They answer two questions every agentic session raises:
 
@@ -24,9 +25,9 @@ Mods are Claude Code plugins built on function hooks. You need Claude Code
 **2.1.287+**, where mods are on by default.
 
 ```
-/plugin marketplace add apolenkov/claude-mods
-/plugin install shell-flow@claude-mods
-/plugin install council@claude-mods
+/plugin marketplace add apolenkov/agent-watch
+/plugin install shell-flow@agent-watch
+/plugin install council@agent-watch
 ```
 
 | Mod                                                          | What you get                                                                                                                      | Needs                                                                      |
@@ -37,8 +38,8 @@ Mods are Claude Code plugins built on function hooks. You need Claude Code
 Options are listed in each mod's README and appear in `/config`. Each mod's
 repository is also a marketplace of its own:
 `/plugin marketplace add apolenkov/claude-shell-flow` or
-`apolenkov/claude-council`. Installs made from claude-mods keep working: the
-plugin names are the same, only their source moved.
+`apolenkov/claude-council`. If you installed them from the former `claude-mods` marketplace, add
+`apolenkov/agent-watch` and install again: the marketplace was renamed.
 
 ## Privacy
 
