@@ -17,7 +17,7 @@ every agentic session raises:
   into agreements, disagreements and unique findings.
 
 ```
-shell: ◐ codex · Review diff 2:13 · output 4s ago · › applying patch src/a.ts · +1 bg
+shell-flow: ◐ codex · Review diff 2:13 · output 4s ago · › applying patch src/a.ts · +1 bg
 ```
 
 The `/shell-flow` pane as drawn in two live runs on Claude Code 2.1.289 (classic layout), rows combined; the status line is shown in its current format:
@@ -32,7 +32,7 @@ The `/shell-flow` pane as drawn in two live runs on Claude Code 2.1.289 (classic
 │ [ ▸ ] ◐ 0:51  Count steps  output 1s ago [ stop ]            │
 │   bg · main · for i in $(seq 40); do echo step $i; sleep 2…  │
 ╰──────────────────────────────────────────────────────────────╯
-  ⚠ shell-flow: shell: ✗ Fail on purpose exit 2 · +1 bg
+  ⚠ shell-flow: ✗ Fail on purpose exit 2 · +1 bg
 ```
 
 ## Install
