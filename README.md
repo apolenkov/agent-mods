@@ -20,17 +20,21 @@ every agentic session raises:
 shell-flow: ◐ codex · Review diff 2:13 · output 4s ago · › applying patch src/a.ts · +1 bg
 ```
 
-The `/shell-flow` pane as drawn in two live runs on Claude Code 2.1.289 (classic layout), rows combined; the status line is shown in its current format:
+The `/shell-flow` pane's layout (assembled from the pane the tests draw, not a
+screenshot), with the status line under it:
 
 ```
 ╭──────────────────────────────────────────────────────────────╮
-│ [ background only ] [ clear ] [ close ]                      │
-│ [ ▸ ] ○ 0:00  Show current directory and all files  denied   │
-│   agent a189ac45c45566717 · pwd; ls -la                      │
-│ [ ▸ ] ✗ 0:03  Fail on purpose  exit 2                        │
-│   main · sleep 3; exit 2                                     │
-│ [ ▸ ] ◐ 0:51  Count steps  output 1s ago [ stop ]            │
-│   bg · main · for i in $(seq 40); do echo step $i; sleep 2…  │
+│ [ c clear ] [ q close ]                                      │
+│ [1 ▸] ◐ 0:51 output 1s ago  Count steps  [ s stop ]          │
+│       bg · main · for i in $(seq 40); do echo step $i; sle…  │
+│       › step 26                                              │
+│ [2 ▸] ✗ 0:03 exit 2  Fail on purpose                         │
+│       main · sleep 3; exit 2                                 │
+│ [3 ▸] ○ 0:00 denied  Show current directory and all files    │
+│       agent a189ac45c45566717 · pwd; ls -la                  │
+│       ○ Permission to use Bash has been denied.              │
+│ ctrl+x tab focus · 1–9 expand · c clear · s stop · q close   │
 ╰──────────────────────────────────────────────────────────────╯
   ⚠ shell-flow: ✗ Fail on purpose exit 2 · +1 bg
 ```
