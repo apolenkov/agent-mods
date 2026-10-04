@@ -9,18 +9,18 @@
   },
   "plugins": [
     {
-      "name": "shell-flow",
+      "name": "agent-shell-watch",
       "source": {
         "source": "url",
-        "url": "https://github.com/apolenkov/claude-shell-flow.git"
+        "url": "https://github.com/apolenkov/agent-shell-watch.git"
       },
       "description": "Live view of every Bash call, background task and external agent run of the session: elapsed time, output freshness, errors."
     },
     {
-      "name": "council",
+      "name": "agent-council",
       "source": {
         "source": "url",
-        "url": "https://github.com/apolenkov/claude-council.git"
+        "url": "https://github.com/apolenkov/agent-council.git"
       },
       "description": "/council and an auto-review nudge: Codex, Pi, Devin and OpenCodeReview review your diff in parallel; one summary of agreements, disagreements and unique findings."
     }
