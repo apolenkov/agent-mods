@@ -20,6 +20,21 @@ every agentic session raises:
 shell: ◐ codex · Review diff 2:13 · output 4s ago · › applying patch src/a.ts · +1 bg
 ```
 
+Captured live (Claude Code 2.1.289, `/shell-flow` pane in the classic layout):
+
+```
+╭──────────────────────────────────────────────────────────────╮
+│ [ background only ] [ clear ] [ close ]                      │
+│ [ ▸ ] ○ 0:00  Show current directory and all files  denied   │
+│   agent a189ac45c45566717 · pwd; ls -la                      │
+│ [ ▸ ] ✗ 0:03  Fail on purpose  exit 2                        │
+│   main · sleep 3; exit 2                                     │
+│ [ ▸ ] ◐ 0:51  Count steps  output 1s ago [ stop ]            │
+│   bg · main · for i in $(seq 40); do echo step $i; sleep 2…  │
+╰──────────────────────────────────────────────────────────────╯
+  ⚠ shell-flow: shell: ✗ Fail on purpose exit 2 · +1 bg
+```
+
 ## Install
 
 Mods are Claude Code plugins built on function hooks, an early-access API.
