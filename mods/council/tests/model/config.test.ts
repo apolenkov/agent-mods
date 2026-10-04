@@ -12,6 +12,8 @@ describe("config", () => {
       summarizerModel: "sonnet",
       jevThreshold: 0.3,
       typesafeApiKey: "",
+      systemOneUrl: "https://api.typesafe.ai",
+      systemOneModel: "",
       autoReview: "off",
       cooldownMs: 600_000,
     });

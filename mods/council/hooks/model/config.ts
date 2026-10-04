@@ -21,6 +21,7 @@ const DEFAULTS = {
   jevThreshold: 0.3,
   cooldownMin: 10,
   summarizerModel: "sonnet",
+  systemOneUrl: "https://api.typesafe.ai",
 } as const;
 
 /** The plugin's options, read and defaulted. */
@@ -33,6 +34,10 @@ export type CouncilConfig = Readonly<{
   summarizerModel: string;
   jevThreshold: number;
   typesafeApiKey: string;
+  /** The System One API's base URL: TypeSafe's, or a local server's. */
+  systemOneUrl: string;
+  /** Its model; empty: TYPESAFE_MODEL, else jev-latest. */
+  systemOneModel: string;
   autoReview: "notify" | "off";
   cooldownMs: number;
 }>;
@@ -74,6 +79,9 @@ export const configOf = (options: PluginOptions): CouncilConfig => ({
     stringOf(options["summarizerModel"], "").trim() || DEFAULTS.summarizerModel,
   jevThreshold: numberOf(options["jevThreshold"], DEFAULTS.jevThreshold),
   typesafeApiKey: stringOf(options["typesafeApiKey"], ""),
+  systemOneUrl:
+    stringOf(options["systemOneUrl"], "").trim() || DEFAULTS.systemOneUrl,
+  systemOneModel: stringOf(options["systemOneModel"], "").trim(),
   autoReview: options["autoReview"] === "notify" ? "notify" : "off",
   cooldownMs:
     numberOf(options["cooldownMin"], DEFAULTS.cooldownMin) * MINUTE_MS,
