@@ -87,7 +87,8 @@ With `autoReview` set to `notify`, an answered turn of the main conversation
 schedules a review once the session has been idle for 15 seconds (any new
 prompt cancels it), when the diff changed since the last review and the
 cooldown has passed. It never holds a turn, never opens the pane, and only
-notifies: a toast and the status line `council: N findings`. Off by default,
+notifies: a toast and the status line `council: N findings` (`1 finding` for
+one; Claude Code adds the `council:` label). Off by default,
 because the members' CLIs may cost you money.
 
 ## Options

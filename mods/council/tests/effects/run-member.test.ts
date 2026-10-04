@@ -26,7 +26,9 @@ describe("run-member", () => {
 
       await world.clock.advance(60_000);
 
-      expect(world.kept.toasts.at(-1)).toContain("council:");
+      expect(world.kept.toasts.at(-1)).toMatch(
+        /^\d+ findings? — \/council status$/u,
+      );
       await $.command.run(councilCommand("status"));
       const pane = await $.ui.mount({
         plugin: "council",
@@ -58,7 +60,9 @@ describe("run-member", () => {
     await $.command.run(councilCommand());
     await world.clock.settle();
 
-    expect(world.kept.toasts.at(-1)).toContain("council:");
+    expect(world.kept.toasts.at(-1)).toMatch(
+      /^\d+ findings? — \/council status$/u,
+    );
     expect(
       world.kept.prompts,
       "codex alone found nothing: no summary call",

@@ -33,7 +33,9 @@ describe("auto-review", () => {
     await world.clock.advance(IDLE_MS);
 
     expect(world.kept.spawns).toHaveLength(3);
-    expect(world.kept.toasts.at(-1)).toContain("council:");
+    expect(world.kept.toasts.at(-1)).toMatch(
+      /^\d+ findings? — \/council status$/u,
+    );
     expect(world.kept.submitted).toEqual([]);
     expect(world.kept.opened, "no pane opened unasked").toBe(0);
   });

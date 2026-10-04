@@ -76,9 +76,7 @@ describe("summarize", () => {
     await $.command.run(councilCommand());
     await world.clock.settle();
 
-    expect(world.kept.toasts.at(-1)).toBe(
-      "council: 4 findings — /council status",
-    );
+    expect(world.kept.toasts.at(-1)).toBe("4 findings — /council status");
     const next = await $.command.run(councilCommand());
     expect(next.text).toContain("reviewing the working diff");
   });
@@ -90,9 +88,7 @@ describe("summarize", () => {
     await $.command.run(councilCommand());
     await world.clock.settle();
 
-    expect(world.kept.toasts.at(-1)).toBe(
-      "council: 4 findings — /council status",
-    );
+    expect(world.kept.toasts.at(-1)).toBe("4 findings — /council status");
   });
 
   test(

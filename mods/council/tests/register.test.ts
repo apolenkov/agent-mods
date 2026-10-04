@@ -44,10 +44,8 @@ describe("register", () => {
     ]);
     expect(world.kept.prompts[0]).toContain("Cache never invalidated");
     expect(world.kept.prompts[0]).toContain("Stale cache");
-    expect(world.kept.toasts.at(-1)).toBe(
-      "council: 2 findings — /council status",
-    );
-    expect(world.kept.statuses.at(-1)).toBe("council: 2 findings");
+    expect(world.kept.toasts.at(-1)).toBe("2 findings — /council status");
+    expect(world.kept.statuses.at(-1)).toBe("2 findings");
     expect(world.kept.submitted, "nothing reaches the model unasked").toEqual(
       [],
     );
@@ -154,7 +152,9 @@ describe("register", () => {
     await world.clock.settle();
 
     expect(world.kept.spawns).toEqual([]);
-    expect(world.kept.toasts.at(-1)).toContain("nothing to review");
+    expect(world.kept.toasts.at(-1)).toBe(
+      "nothing to review: the working tree is clean.",
+    );
   });
 
   test("single flight: a second /council while one runs is refused", async ($, on) => {
@@ -233,6 +233,20 @@ describe("register", () => {
     expect(again.text).toBe("Council pane opened.");
     const rerun = await $.command.run(councilCommand());
     expect(rerun.text).toContain("reviewing the working diff");
+  });
+
+  test("one point is one finding, in the status line and the toast", async ($, on) => {
+    const world = councilWorld(on, {
+      outputs: OUTPUTS,
+      replies: ['{"unique":[{"members":["pi"],"text":"x"}]}'],
+    });
+
+    await $.session.start(SESSION);
+    await $.command.run(councilCommand());
+    await world.clock.settle();
+
+    expect(world.kept.statuses.at(-1)).toBe("1 finding");
+    expect(world.kept.toasts.at(-1)).toBe("1 finding — /council status");
   });
 
   test("/council status opens the pane", async ($, on) => {

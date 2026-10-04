@@ -1,5 +1,6 @@
 import type { CouncilMember, CouncilRun } from "../../types/index.d.ts";
 import type { CouncilConfig } from "../model/config.ts";
+import { findingsLabel } from "../model/format.ts";
 import { itemCount } from "../model/summary.ts";
 import { detectMembers } from "./detect.ts";
 import { hashOf, workingDiff } from "./diff.ts";
@@ -49,7 +50,7 @@ export const canClaim = async (
         },
   );
   if (run.id === id) {
-    host.status("council: reviewing…");
+    host.status("reviewing…");
   }
   return run.id === id;
 };
@@ -80,7 +81,7 @@ export const interruptStale = async (host: Host): Promise<void> => {
 const finishWithNote = async (host: Host, note: string): Promise<void> => {
   await host.updateRun((run): CouncilRun => ({ ...run, phase: "done", note }));
   host.status(undefined);
-  host.toast(`council: ${note}`);
+  host.toast(note);
 };
 
 const tooFew = (members: readonly CouncilMember[]): string => {
@@ -127,8 +128,8 @@ const hasReviewedWith = async (
     summary,
   }));
   const count = itemCount(summary);
-  host.status(`council: ${String(count)} findings`);
-  host.toast(`council: ${String(count)} findings — /council status`);
+  host.status(findingsLabel(count));
+  host.toast(`${findingsLabel(count)} — /council status`);
   return true;
 };
 
