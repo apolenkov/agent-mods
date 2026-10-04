@@ -11,7 +11,40 @@ const user = (text: string): SessionMessage => ({
   toolUses: [],
 });
 const B1_DONE = user(taskNotification("b1"));
+const STILL_RUNNING = user(taskNotification("b1", "running"));
+const STUCK = user(
+  [
+    "<task-notification>",
+    "<task-id>b1</task-id>",
+    "<summary>Background command may be waiting for input</summary>",
+    "</task-notification>",
+  ].join("\n"),
+);
 const B3_KILLED = user(taskNotification("b3", "killed"));
+
+const stop = (
+  input: Record<string, unknown>,
+  isError?: true,
+): SessionMessage => ({
+  role: "assistant",
+  text: "",
+  toolUses: [
+    {
+      tool_use_id: "toolu_stop",
+      tool: "TaskStop",
+      input,
+      ...(isError === undefined
+        ? {
+            result: {
+              message: "stopped",
+              task_id: "x",
+              task_type: "local_bash",
+            },
+          }
+        : { isError, text: "No task found" }),
+    },
+  ],
+});
 
 describe("background", () => {
   test("none: no background task in the transcript", () => {
@@ -69,6 +102,28 @@ describe("background", () => {
         backgroundBash("b1"),
         { role: "assistant", text: taskNotification("b1"), toolUses: [] },
       ]),
+    ).toEqual(["b1"]);
+  });
+
+  test("a successful TaskStop ends the task; a refused one does not", () => {
+    expect(
+      runningBackgroundTasks([
+        backgroundBash("b1"),
+        backgroundBash("b2"),
+        backgroundBash("b3"),
+        stop({ task_id: "b1" }),
+        stop({ shell_id: "b2" }),
+        stop({ task_id: "b3" }, true),
+      ]),
+    ).toEqual(["b3"]);
+  });
+
+  test("a notification without a terminal status leaves the task running", () => {
+    expect(runningBackgroundTasks([backgroundBash("b1"), STUCK])).toEqual([
+      "b1",
+    ]);
+    expect(
+      runningBackgroundTasks([backgroundBash("b1"), STILL_RUNNING]),
     ).toEqual(["b1"]);
   });
 });
