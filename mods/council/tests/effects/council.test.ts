@@ -1,9 +1,12 @@
+import type { SessionMessage } from "claude-code";
 import { describe, expect, test } from "claude-code/testing";
 
 import { ANSWERED_TURN } from "../fixtures/answered-turn.ts";
+import { backgroundBash } from "../fixtures/background-bash.ts";
 import { councilCommand } from "../fixtures/council-command.ts";
 import { councilWorld } from "../fixtures/council-world.ts";
 import { SESSION } from "../fixtures/session.ts";
+import { taskNotification } from "../fixtures/task-notification.ts";
 import { TYPED_PROMPT } from "../fixtures/typed-prompt.ts";
 
 const NOTIFY = { options: { autoReview: "notify", cooldownMin: 10 } };
@@ -200,6 +203,51 @@ describe("auto-review", () => {
       await $.session.start(SESSION);
       await $.turn.complete(ANSWERED_TURN);
       script.agents = [{ id: "a2", status: "running" }];
+      await world.clock.advance(IDLE_MS);
+
+      expect(world.kept.spawns).toEqual([]);
+    },
+  );
+
+  test(
+    "a background Bash task still running holds the auto-review back",
+    NOTIFY,
+    async ($, on) => {
+      const script = { messages: [backgroundBash("b1")] };
+      const world = councilWorld(on, script);
+      on("turn.complete", (_engine, e) => ({ text: e.answer }));
+
+      await $.session.start(SESSION);
+      await $.turn.complete(ANSWERED_TURN);
+      await world.clock.advance(IDLE_MS);
+
+      expect(world.kept.spawns).toEqual([]);
+
+      script.messages = [
+        backgroundBash("b1"),
+        { role: "user", text: taskNotification("b1"), toolUses: [] },
+      ];
+      await $.turn.complete(ANSWERED_TURN);
+      await world.clock.advance(IDLE_MS);
+
+      expect(
+        world.kept.spawns,
+        "it ended: the next idle turn runs",
+      ).toHaveLength(3);
+    },
+  );
+
+  test(
+    "a background task started during the idle wait is checked again",
+    NOTIFY,
+    async ($, on) => {
+      const script: { messages: SessionMessage[] } = { messages: [] };
+      const world = councilWorld(on, script);
+      on("turn.complete", (_engine, e) => ({ text: e.answer }));
+
+      await $.session.start(SESSION);
+      await $.turn.complete(ANSWERED_TURN);
+      script.messages = [backgroundBash("b2")];
       await world.clock.advance(IDLE_MS);
 
       expect(world.kept.spawns).toEqual([]);

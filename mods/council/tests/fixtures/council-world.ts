@@ -1,4 +1,4 @@
-import type { Args, On } from "claude-code";
+import type { Args, On, SessionMessage } from "claude-code";
 import { mock, type MockClock } from "claude-code/testing";
 
 import type { CouncilMemberName } from "../../types/index.d.ts";
@@ -56,6 +56,8 @@ export function councilWorld(
     diffDelayMs?: number;
     /** What `$.agent.list()` answers; read at each call, so a test may change it. */
     agents?: { id: string; status: string }[];
+    /** What `$.session.messages()` answers; read at each call. */
+    messages?: SessionMessage[];
     /** `$.model.complete` rejects, as for a model the client blocks. */
     completeRejects?: true;
   } = {},
@@ -84,6 +86,7 @@ export function councilWorld(
   });
   mock.store(on);
   on("session.start", (_engine, e) => ({ cwd: e.cwd }));
+  on("session.messages", () => ({ value: script.messages ?? [] }));
   on("agent.list", () => ({
     value: (script.agents ?? []).map((agent) => ({
       ...agent,

@@ -204,9 +204,14 @@ export const convene = async (
   try {
     await reviewDiff(host, config, request);
   } catch (error) {
-    // Never leave the council busy: a failed run is a finished one.
+    // Never leave the council busy: a failed run is a finished one. If even
+    // that write fails, see below.
     const why = error instanceof Error ? error.message : String(error);
-    await finishWithNote(host, `the run failed: ${why}`);
+    try {
+      await finishWithNote(host, `the run failed: ${why}`);
+    } catch {
+      // The module is gone (a reload): the next session start ends the run.
+    }
   }
 };
 
@@ -220,14 +225,17 @@ const reviewDiff = async (
     await finishWithNote(host, "nothing to review: the working tree is clean.");
     return;
   }
-  const hash = await hashOf(diff);
   const hasReviewed = await hasReviewedWith(host, config, {
     diff,
     ...(request.question !== undefined && { question: request.question }),
   });
-  // Only a review that ran counts: a skipped one may run once members free up.
+  // Only a review that ran counts: a skipped one may run once members free
+  // up. Hashed after the review: the digest is real time, not the clock's.
   if (hasReviewed) {
-    await host.writeReviewed({ hash, at: await host.now() });
+    await host.writeReviewed({
+      hash: await hashOf(diff),
+      at: await host.now(),
+    });
   }
 };
 
@@ -259,9 +267,9 @@ export const autoReview = async (
     diff.trim() !== "" &&
     (await hashOf(diff)) !== reviewed.hash &&
     // A prompt while the diff was read still cancels the run, and a
-    // subagent started during the idle wait holds it back.
+    // subagent or background task started during the idle wait holds it back.
     (await host.readToken()) === token &&
-    !(await host.isAgentRunning());
+    !(await host.isWorkRunning());
   if (isWanted && (await canClaim(host, { isAuto: true }))) {
     await convene(host, config, { isAuto: true, diff });
   }

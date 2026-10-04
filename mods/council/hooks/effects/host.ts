@@ -26,8 +26,11 @@ export type Host = Readonly<{
   after: (ms: number, callback: () => void) => Timer;
   /** `$.clock.every`. */
   every: (ms: number, callback: () => void) => Timer;
-  /** Whether any subagent runs now (`$.agent.list()`). */
-  isAgentRunning: () => Promise<boolean>;
+  /**
+   * Whether other work still runs: a subagent (`$.agent.list()`) or a
+   * background Bash task (from `$.session.messages()`).
+   */
+  isWorkRunning: () => Promise<boolean>;
   /** `$.process.run`. */
   run: (
     argv: readonly string[],

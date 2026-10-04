@@ -9,6 +9,7 @@ import { atom, read, update } from "claude-code";
 import { councilCommand, sendSummary, startRun } from "./effects/command.ts";
 import { autoReview, interruptStale } from "./effects/council.ts";
 import type { Host } from "./effects/host.ts";
+import { runningBackgroundTasks } from "./model/background.ts";
 import { configOf, type CouncilConfig } from "./model/config.ts";
 import { paneView } from "./view/pane.tsx";
 
@@ -43,10 +44,7 @@ function hostOf($: Readonly<EngineInterface>): Host {
     now: () => $.clock.now(),
     after: (ms, callback) => $.clock.after(ms, callback),
     every: (ms, callback) => $.clock.every(ms, callback),
-    isAgentRunning: async () => {
-      const agents = await $.agent.list();
-      return agents.some((agent) => agent.status === "running");
-    },
+    isWorkRunning: () => isWorkRunning($),
     run: (argv, init) => $.process.run(argv, init),
     spawn: (request) => $.process.spawn(request),
     readFile: (path) => $.fs.read(path),
@@ -77,6 +75,21 @@ function hostOf($: Readonly<EngineInterface>): Host {
     },
     ...stateOf($),
   };
+}
+
+/**
+ * Whether other work still runs: a subagent, or a background Bash task the
+ * transcript shows started and not yet ended.
+ * @param $ the hook's engine
+ * @returns true while either runs
+ */
+async function isWorkRunning($: Readonly<EngineInterface>): Promise<boolean> {
+  const agents = await $.agent.list();
+  const rows = await $.session.messages();
+  return (
+    agents.some((agent) => agent.status === "running") ||
+    runningBackgroundTasks(rows).length > 0
+  );
 }
 
 /**
@@ -164,13 +177,14 @@ export const register: Register = (on, options) => {
   });
 
   on("turn.complete", async ($, e, next) => {
-    // Not while a background subagent still works: its result is not in
-    // the diff yet. Its end brings another turn, and that one schedules.
+    // Not while a subagent or a background Bash task still works: its
+    // result is not in the diff yet. Its end brings another turn, and that
+    // one schedules.
     if (
       config.autoReview === "notify" &&
       e.agentId === undefined &&
       e.reason === "answer" &&
-      !(await hostOf($).isAgentRunning())
+      !(await hostOf($).isWorkRunning())
     ) {
       const token = await read($, AUTO_TOKEN);
       const host = hostOf($);
