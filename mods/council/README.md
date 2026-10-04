@@ -99,7 +99,9 @@ because the members' CLIs may cost you money.
 | `timeoutMin`      | `8`                              | A member running longer is stopped and marked failed.                       |
 | `summarizer`      | `claude`                         | `claude`, or `jev` (TypeSafe scores, Claude writes).                        |
 | `summarizerModel` | `sonnet`                         | The Claude model that writes the summary (an alias or a full id).           |
-| `typesafeApiKey`  | (empty: `TYPESAFE_API_KEY`)      | Kept in secure storage. `TYPESAFE_MODEL` picks the model (`jev-latest`).    |
+| `typesafeApiKey`  | (empty: `TYPESAFE_API_KEY`)      | Kept in secure storage. Not needed for a loopback `systemOneUrl`.           |
+| `systemOneUrl`    | `https://api.typesafe.ai`        | The System One API's base URL; http only for 127.0.0.1, localhost or ::1.   |
+| `systemOneModel`  | (empty: `TYPESAFE_MODEL`)        | The System One model; `jev-latest` when both are empty.                     |
 | `jevThreshold`    | `0.3`                            | Findings Jev rates less likely than this to be real go to notes.            |
 | `autoReview`      | `off`                            | `notify` turns the auto-review on.                                          |
 | `cooldownMin`     | `10`                             | The least time between two auto-reviews.                                    |
@@ -117,7 +119,8 @@ Limit files are only read, never written; a missing file means no limit.
   Requests hold at most 9 questions and 14,000 characters (the owner's
   calibration rule, not an API limit); at most 20
   findings are scored, the rest stand alone. Claude then writes one line per
-  issue. If TypeSafe fails, Claude merges alone and a note says why.
+  issue. If System One fails, is refused, or a remote one has no key, Claude
+  merges alone and a note says why.
 
 ## Privacy: what leaves your machine
 
@@ -130,8 +133,13 @@ diff HEAD` plus untracked text files of at most 64 KB, cut at 200 KB.
   that filter cannot apply to them, their own ignore rules do.
 - **To Anthropic**, through the session's own client: the members' findings
   (paths, lines, titles, details) and your question, to write the summary.
-- **To TypeSafe** (`api.typesafe.ai`), only with `summarizer: jev` and a key:
-  each finding's member, location, title and up to 300 characters of detail.
+- **To the System One API**, only with `summarizer: jev`: each finding's
+  member, location, title and up to 300 characters of detail. By default that
+  is TypeSafe (`api.typesafe.ai`, needs a key). With `systemOneUrl:
+http://127.0.0.1:8010` and `systemOneModel: kev-latest` (a local Kev server
+  speaking the same API) the scoring stays on your machine and no key or
+  Authorization header is sent; the prose is still written by Claude, as
+  above. Plain http to any other host is refused.
 - **To the session's model**: nothing, until you run `/council send` or press
   the pane's button.
 

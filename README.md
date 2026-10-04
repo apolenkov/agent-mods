@@ -43,7 +43,8 @@ Options are listed in each mod's README and appear in `/config`.
 
 No telemetry. shell-flow makes no network calls. council sends your diff only to
 the reviewer CLIs you installed (each to its own provider) and, if you choose the
-Jev summarizer, the findings to TypeSafe. Secret-like untracked files are never
+Jev summarizer, the findings to TypeSafe (or to a local System One server such
+as Kev on 127.0.0.1, which keeps them on your machine). Secret-like untracked files are never
 read. Details in [SECURITY.md](SECURITY.md).
 
 ## Development
