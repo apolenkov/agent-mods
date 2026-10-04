@@ -1,8 +1,10 @@
 {
   "name": "council",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "A council of independent code reviewers (Codex, Pi, Devin, OpenCodeReview) runs over your working diff in parallel; one summary of agreements, disagreements and unique findings. /council, plus an auto-review that only notifies.",
-  "author": { "name": "apolenkov" },
+  "author": {
+    "name": "apolenkov"
+  },
   "repository": "https://github.com/apolenkov/claude-mods",
   "license": "MIT",
   "keywords": ["code-review", "council", "codex", "pi", "devin", "ocr", "jev"],
