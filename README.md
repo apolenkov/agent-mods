@@ -20,9 +20,8 @@ only lists them. They answer two questions every agentic session raises:
 
 ## Install
 
-Mods are Claude Code plugins built on function hooks, an early-access API.
-You need Claude Code **2.1.288+** and `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1`
-(in your shell, or under `env` in `~/.claude/settings.json`).
+Mods are Claude Code plugins built on function hooks. You need Claude Code
+**2.1.287+**, where mods are on by default.
 
 ```
 /plugin marketplace add apolenkov/claude-mods
