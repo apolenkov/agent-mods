@@ -33,9 +33,17 @@ const timeOf = (member: CouncilMember, nowMs: number): string =>
     ? ""
     : elapsedLabel((member.endedAt ?? nowMs) - member.startedAt);
 
+/**
+ * A count of findings, singular for one.
+ * @param count how many
+ * @returns `1 finding` or `N findings`
+ */
+export const findingsLabel = (count: number): string =>
+  `${String(count)} ${count === 1 ? "finding" : "findings"}`;
+
 const outcomeOf = (member: CouncilMember): string =>
   member.status === "done"
-    ? `${String(member.findings.length)} findings`
+    ? findingsLabel(member.findings.length)
     : (member.reason ?? "");
 
 /**
