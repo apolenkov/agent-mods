@@ -1,1 +1,8 @@
 blank_issues_enabled: false
+contact_links:
+  - name: shell-flow
+    url: https://github.com/apolenkov/claude-shell-flow/issues
+    about: Bugs and ideas for shell-flow
+  - name: council
+    url: https://github.com/apolenkov/claude-council/issues
+    about: Bugs and ideas for council

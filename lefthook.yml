@@ -1,17 +1,8 @@
 pre-commit:
-  parallel: true
   jobs:
     - name: format
-      glob: "*.{ts,tsx,json,md,yml,yaml}"
+      glob: "*.{ts,json,md,yml,yaml}"
       run: npx prettier --check {staged_files}
-    # The whole-repo lint: it runs the model in its own ESLint process (see
-    # CONTRIBUTING.md), which a single run over the staged files cannot.
-    - name: lint
-      glob: "*.{ts,tsx}"
-      run: npm run -s lint
-    - name: typecheck
-      glob: "*.{ts,tsx}"
-      run: npm run -s typecheck
 commit-msg:
   jobs:
     - name: commitlint

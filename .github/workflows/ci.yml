@@ -10,11 +10,9 @@ concurrency:
   cancel-in-progress: true
 jobs:
   check:
-    # Trusted runs (push to main, PRs from this repository's own branches by a
-    # human) use the owner's ephemeral self-hosted runner. Fork PRs and dependency
-    # bots (their PRs carry third-party package code) run on GitHub's hosted runner.
-    runs-on: ${{ (github.event_name == 'push' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'renovate[bot]')) && fromJSON('["self-hosted","claude-mods"]') || 'ubuntu-latest' }}
-    timeout-minutes: 20
+    # The showcase holds no code: formatting, JSON and the marketplace manifest.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -29,8 +27,6 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: node node_modules/@anthropic-ai/claude-code/install.cjs
       - run: npm run check
-        env:
-          CLAUDE_CODE_ENABLE_FUNCTION_HOOKS: "1"
       - name: commit messages
         if: github.event_name == 'pull_request'
         run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
