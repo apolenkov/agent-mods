@@ -71,4 +71,38 @@ describe("command", () => {
     const again = await $.command.run(councilCommand());
     expect(again.text).toContain("reviewing the working diff");
   });
+
+  test("a run cancelled while reading the diff launches no reviewer", async ($, on) => {
+    const world = councilWorld(on, { diffDelayMs: 1000 });
+
+    await $.session.start(SESSION);
+    await $.command.run(councilCommand());
+    await world.clock.settle();
+    await $.command.run(councilCommand("cancel"));
+    await world.clock.advance(2000);
+
+    expect(world.kept.spawns).toEqual([]);
+  });
+
+  test("a cancelled run never touches the run that replaced it", async ($, on) => {
+    const world = councilWorld(on, {
+      diffDelayMs: 1000,
+      outputs: OUTPUTS,
+      replies: [JSON.stringify(SUMMARY)],
+    });
+
+    await $.session.start(SESSION);
+    await $.command.run(councilCommand("old question"));
+    await world.clock.settle();
+    await $.command.run(councilCommand("cancel"));
+    await $.command.run(councilCommand("new question"));
+    await world.clock.advance(3000);
+
+    expect(world.kept.spawns, "the new run's reviewers only").toHaveLength(3);
+    expect(world.kept.written.map((file) => file.text).join("")).not.toContain(
+      "old question",
+    );
+    expect(world.kept.prompts, "one summary").toHaveLength(1);
+    expect(world.kept.statuses.at(-1)).toBe("2 findings");
+  });
 });

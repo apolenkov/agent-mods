@@ -1,6 +1,6 @@
 import type { CouncilConfig } from "../model/config.ts";
 import { sendText } from "../model/summary.ts";
-import { canClaim, convene, didCancel } from "./council.ts";
+import { claimOf, convene, didCancel } from "./council.ts";
 import type { Host } from "./host.ts";
 
 /**
@@ -40,12 +40,13 @@ export const startRun = async (
     isAuto: false,
     ...(question !== undefined && { question }),
   };
-  if (!(await canClaim(host, request))) {
+  const runId = await claimOf(host, request);
+  if (runId === undefined) {
     return "The council is already reviewing; /council status shows it.";
   }
   await host.openPane();
   host.after(0, () => {
-    void convene(host, config, request);
+    void convene(host, config, { ...request, runId });
   });
   return "The council is reviewing the working diff; /council status shows it.";
 };

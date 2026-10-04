@@ -16,6 +16,9 @@ export type CouncilRequest = Readonly<{
   diff?: string;
 }>;
 
+/** A request whose run was claimed: every write is made to that run only. */
+export type ClaimedRequest = CouncilRequest & Readonly<{ runId: string }>;
+
 const MIN_MEMBERS = 2;
 
 const isRunBusy = (run: CouncilRun): boolean =>
@@ -64,12 +67,12 @@ export const didCancel = async (host: Host): Promise<boolean> => {
  * so of two entry points racing, one wins.
  * @param host the engine
  * @param request the question and whether it is automatic
- * @returns whether this caller holds the council now
+ * @returns the claim's run id when this caller holds the council now
  */
-export const canClaim = async (
+export const claimOf = async (
   host: Host,
   request: CouncilRequest,
-): Promise<boolean> => {
+): Promise<string | undefined> => {
   const id = crypto.randomUUID();
   const startedAt = await host.now();
   const run = await host.updateRun((current): CouncilRun =>
@@ -86,10 +89,11 @@ export const canClaim = async (
           }),
         },
   );
-  if (run.id === id) {
-    host.status("reviewing…");
+  if (run.id !== id) {
+    return undefined;
   }
-  return run.id === id;
+  host.status("reviewing…");
+  return id;
 };
 
 /**
@@ -115,8 +119,20 @@ export const interruptStale = async (host: Host): Promise<void> => {
   );
 };
 
-const finishWithNote = async (host: Host, note: string): Promise<void> => {
-  await host.updateRun((run): CouncilRun => ({ ...run, phase: "done", note }));
+// Ends run `id` with a note, unless it was cancelled or replaced meanwhile.
+const finishWithNote = async (
+  host: Host,
+  id: string,
+  note: string,
+): Promise<void> => {
+  const run = await host.updateRun((current): CouncilRun =>
+    current.id === id && isRunBusy(current)
+      ? { ...current, phase: "done", note }
+      : current,
+  );
+  if (run.id !== id || run.note !== note) {
+    return;
+  }
   host.status(undefined);
   host.toast(note);
 };
@@ -135,22 +151,28 @@ const tooFew = (members: readonly CouncilMember[]): string => {
 const hasReviewedWith = async (
   host: Host,
   config: CouncilConfig,
-  input: Readonly<{ diff: string; question?: string }>,
+  input: Readonly<{ id: string; diff: string; question?: string }>,
 ): Promise<boolean> => {
+  const { id } = input;
   const members = await detectMembers(host, config);
-  await host.updateRun((run): CouncilRun => ({ ...run, members }));
-  const runnable = members.filter((member) => member.status === "waiting");
-  if (runnable.length < MIN_MEMBERS) {
-    await finishWithNote(host, tooFew(members));
+  const run = await host.updateRun((current): CouncilRun =>
+    isOurs(current, id, "running") ? { ...current, members } : current,
+  );
+  // Cancelled (or replaced) while the members were found: launch nobody.
+  if (!isOurs(run, id, "running")) {
     return false;
   }
-  const { id = "" } = await host.readRun();
+  const runnable = members.filter((member) => member.status === "waiting");
+  if (runnable.length < MIN_MEMBERS) {
+    await finishWithNote(host, id, tooFew(members));
+    return false;
+  }
   await Promise.all(
     runnable.map(({ name }) =>
       runMember(host, { name, input, timeoutMs: config.timeoutMs, runId: id }),
     ),
   );
-  return hasSummarized(host, config, { id, ...input });
+  return hasSummarized(host, config, input);
 };
 
 // The summary of the run `id`, unless it was cancelled meanwhile.
@@ -187,7 +209,7 @@ const hasSummarized = async (
 };
 
 /**
- * One run, after `canClaim`: the diff, the members, their reviews in
+ * One run, after `claimOf`: the diff, the members, their reviews in
  * parallel, the summary. Called from a `$.clock.after` callback, never
  * awaited by a hook; the long `$` calls inside do not count against any
  * hook's budget.
@@ -199,7 +221,7 @@ const hasSummarized = async (
 export const convene = async (
   host: Host,
   config: CouncilConfig,
-  request: CouncilRequest,
+  request: ClaimedRequest,
 ): Promise<void> => {
   try {
     await reviewDiff(host, config, request);
@@ -208,7 +230,7 @@ export const convene = async (
     // that write fails, see below.
     const why = error instanceof Error ? error.message : String(error);
     try {
-      await finishWithNote(host, `the run failed: ${why}`);
+      await finishWithNote(host, request.runId, `the run failed: ${why}`);
     } catch {
       // The module is gone (a reload): the next session start ends the run.
     }
@@ -218,14 +240,20 @@ export const convene = async (
 const reviewDiff = async (
   host: Host,
   config: CouncilConfig,
-  request: CouncilRequest,
+  request: ClaimedRequest,
 ): Promise<void> => {
+  const id = request.runId;
   const diff = request.diff ?? (await workingDiff(host));
   if (diff.trim() === "") {
-    await finishWithNote(host, "nothing to review: the working tree is clean.");
+    await finishWithNote(
+      host,
+      id,
+      "nothing to review: the working tree is clean.",
+    );
     return;
   }
   const hasReviewed = await hasReviewedWith(host, config, {
+    id,
     diff,
     ...(request.question !== undefined && { question: request.question }),
   });
@@ -270,7 +298,8 @@ export const autoReview = async (
     // subagent or background task started during the idle wait holds it back.
     (await host.readToken()) === token &&
     !(await host.isWorkRunning());
-  if (isWanted && (await canClaim(host, { isAuto: true }))) {
-    await convene(host, config, { isAuto: true, diff });
+  const runId = isWanted ? await claimOf(host, { isAuto: true }) : undefined;
+  if (runId !== undefined) {
+    await convene(host, config, { isAuto: true, diff, runId });
   }
 };
