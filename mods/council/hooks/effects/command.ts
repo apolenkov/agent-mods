@@ -1,6 +1,6 @@
 import type { CouncilConfig } from "../model/config.ts";
 import { sendText } from "../model/summary.ts";
-import { canClaim, convene } from "./council.ts";
+import { canClaim, convene, didCancel } from "./council.ts";
 import type { Host } from "./host.ts";
 
 /**
@@ -14,6 +14,8 @@ export const sendSummary = async (host: Host): Promise<string> => {
     return "No council summary to send yet.";
   }
   const text = sendText(summary);
+  // Seen and sent: the line gives way to other plugins' status lines.
+  host.status(undefined);
   // Submitted once this hook has returned: a prompt waits on the turn.
   host.after(0, () => {
     void host.submit(text);
@@ -49,7 +51,27 @@ export const startRun = async (
 };
 
 /**
- * `/council`, `/council <question>`, `/council send`, `/council status`.
+ * Opens the pane; a finished run's status line is cleared, it was seen.
+ * @param host the engine
+ * @returns what to tell the owner
+ */
+const showPane = async (host: Host): Promise<string> => {
+  const { phase } = await host.readRun();
+  if (phase === "done") {
+    host.status(undefined);
+  }
+  await host.openPane();
+  return "Council pane opened.";
+};
+
+const cancelText = async (host: Host): Promise<string> =>
+  (await didCancel(host))
+    ? "Cancelled the council's review."
+    : "No council review is running.";
+
+/**
+ * `/council`, `/council <question>`, `/council send`, `/council status`,
+ * `/council cancel`.
  * @param host the engine
  * @param args what followed the command
  * @param config the plugin's config
@@ -65,8 +87,10 @@ export const councilCommand = async (
     return sendSummary(host);
   }
   if (word === "status") {
-    await host.openPane();
-    return "Council pane opened.";
+    return showPane(host);
+  }
+  if (word === "cancel") {
+    return cancelText(host);
   }
   return startRun(host, config, word === "" ? undefined : word);
 };

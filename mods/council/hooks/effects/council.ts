@@ -21,6 +21,43 @@ const MIN_MEMBERS = 2;
 const isRunBusy = (run: CouncilRun): boolean =>
   run.phase === "running" || run.phase === "summarizing";
 
+// Still this run, in this phase: a cancel (or a newer run) ends ours.
+const isOurs = (
+  run: CouncilRun,
+  id: string,
+  phase: CouncilRun["phase"],
+): boolean => run.id === id && run.phase === phase;
+
+/**
+ * Cancels the running review: the run ends as cancelled, its members'
+ * children are stopped by their runs (they watch the run), and no summary
+ * is written.
+ * @param host the engine
+ * @returns whether a review was running
+ */
+export const didCancel = async (host: Host): Promise<boolean> => {
+  const before = await host.readRun();
+  if (!isRunBusy(before)) {
+    return false;
+  }
+  await host.updateRun((run): CouncilRun =>
+    run.id === before.id && isRunBusy(run)
+      ? {
+          ...run,
+          phase: "done",
+          note: "Cancelled.",
+          members: run.members.map((member) =>
+            member.status === "running" || member.status === "waiting"
+              ? { ...member, status: "failed", reason: "cancelled" }
+              : member,
+          ),
+        }
+      : run,
+  );
+  host.status(undefined);
+  return true;
+};
+
 /**
  * Takes the council for a run, unless one is under way (single flight for
  * the whole council): the check and the write are one conditional update,
@@ -107,13 +144,28 @@ const hasReviewedWith = async (
     await finishWithNote(host, tooFew(members));
     return false;
   }
+  const { id = "" } = await host.readRun();
   await Promise.all(
     runnable.map(({ name }) =>
-      runMember(host, { name, input, timeoutMs: config.timeoutMs }),
+      runMember(host, { name, input, timeoutMs: config.timeoutMs, runId: id }),
     ),
   );
-  await host.updateRun((run): CouncilRun => ({ ...run, phase: "summarizing" }));
-  const done = await host.readRun();
+  return hasSummarized(host, config, { id, ...input });
+};
+
+// The summary of the run `id`, unless it was cancelled meanwhile.
+const hasSummarized = async (
+  host: Host,
+  config: CouncilConfig,
+  input: Readonly<{ id: string; question?: string }>,
+): Promise<boolean> => {
+  const { id } = input;
+  const done = await host.updateRun((run): CouncilRun =>
+    isOurs(run, id, "running") ? { ...run, phase: "summarizing" } : run,
+  );
+  if (!isOurs(done, id, "summarizing")) {
+    return false;
+  }
   const summary = await summarize(
     host,
     done.members.flatMap((member) => member.findings),
@@ -122,11 +174,12 @@ const hasReviewedWith = async (
       ...(input.question !== undefined && { question: input.question }),
     },
   );
-  await host.updateRun((run): CouncilRun => ({
-    ...run,
-    phase: "done",
-    summary,
-  }));
+  const ended = await host.updateRun((run): CouncilRun =>
+    isOurs(run, id, "summarizing") ? { ...run, phase: "done", summary } : run,
+  );
+  if (ended.summary !== summary) {
+    return false;
+  }
   const count = itemCount(summary);
   host.status(findingsLabel(count));
   host.toast(`${findingsLabel(count)} — /council status`);
@@ -205,8 +258,10 @@ export const autoReview = async (
   const isWanted =
     diff.trim() !== "" &&
     (await hashOf(diff)) !== reviewed.hash &&
-    // A prompt while the diff was read still cancels the run.
-    (await host.readToken()) === token;
+    // A prompt while the diff was read still cancels the run, and a
+    // subagent started during the idle wait holds it back.
+    (await host.readToken()) === token &&
+    !(await host.isAgentRunning());
   if (isWanted && (await canClaim(host, { isAuto: true }))) {
     await convene(host, config, { isAuto: true, diff });
   }

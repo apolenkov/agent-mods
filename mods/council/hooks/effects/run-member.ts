@@ -25,6 +25,8 @@ export type MemberJob = Readonly<{
   name: CouncilMemberName;
   input: ReviewInput;
   timeoutMs: number;
+  /** The run it belongs to: once that run ends (a cancel), the child stops. */
+  runId: string;
 }>;
 
 const withChunk = (
@@ -67,24 +69,52 @@ const timeoutOf = (
   };
 };
 
+const CANCEL_POLL_MS = 1000;
+
+// Resolves once the run is no longer this one running: a cancel.
+const cancelOf = (
+  host: Host,
+  runId: string,
+): Readonly<{ promise: Promise<"cancelled">; cancel: () => void }> => {
+  const fired = new AbortController();
+  const timer = host.every(CANCEL_POLL_MS, () => {
+    void host.readRun().then((run) => {
+      if (run.id !== runId || run.phase !== "running") {
+        fired.abort();
+      }
+    });
+  });
+  return {
+    promise: new Promise((resolve) => {
+      fired.signal.addEventListener("abort", () => {
+        resolve("cancelled");
+      });
+    }),
+    cancel: timer.cancel,
+  };
+};
+
 const spawnOf = async (
   host: Host,
-  { name, timeoutMs }: MemberJob,
+  { name, timeoutMs, runId }: MemberJob,
   command: MemberCommand,
-): Promise<MemberOutput | "timeout"> => {
+): Promise<MemberOutput | "timeout" | "cancelled"> => {
   const stream = host.spawn({
     argv: command.argv,
     ...(command.stdin !== undefined && { input: command.stdin }),
   });
   const timeout = timeoutOf(host, timeoutMs);
+  const cancelled = cancelOf(host, runId);
   const ended = await Promise.race([
     pump(stream, { stdout: "", stderr: "" }, (text) =>
-      appendTail(host, name, text),
+      appendTail(host, { name, runId }, text),
     ),
     timeout.promise,
+    cancelled.promise,
   ]);
   timeout.cancel();
-  if (ended === "timeout") {
+  cancelled.cancel();
+  if (typeof ended === "string") {
     // Leaving the stream kills the child; not awaited, as a pending read
     // would hold the return behind it.
     void stream.return(undefined as never);
@@ -137,18 +167,18 @@ const endedOf = async (
  */
 export const runMember = async (host: Host, job: MemberJob): Promise<void> => {
   const { name } = job;
-  await setMember(host, name, {
+  await setMember(host, job, {
     status: "running",
     startedAt: await host.now(),
   });
   const ended = await endedOf(host, job);
   const endedAt = await host.now();
   if (typeof ended === "string") {
-    await setMember(host, name, { status: "failed", endedAt, reason: ended });
+    await setMember(host, job, { status: "failed", endedAt, reason: ended });
     return;
   }
   const parsed = parseRun(name, ended, await host.cwd());
-  await setMember(host, name, {
+  await setMember(host, job, {
     endedAt,
     raw: ended.stdout.slice(0, MAX_RAW),
     ...("error" in parsed
