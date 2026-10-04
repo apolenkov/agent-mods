@@ -42,6 +42,11 @@ function hostOf($: Readonly<EngineInterface>): Host {
   return {
     now: () => $.clock.now(),
     after: (ms, callback) => $.clock.after(ms, callback),
+    every: (ms, callback) => $.clock.every(ms, callback),
+    isAgentRunning: async () => {
+      const agents = await $.agent.list();
+      return agents.some((agent) => agent.status === "running");
+    },
     run: (argv, init) => $.process.run(argv, init),
     spawn: (request) => $.process.spawn(request),
     readFile: (path) => $.fs.read(path),
@@ -70,6 +75,22 @@ function hostOf($: Readonly<EngineInterface>): Host {
     toast: (text) => {
       $.ui.toast(text);
     },
+    ...stateOf($),
+  };
+}
+
+/**
+ * The host's reads and writes of the council's `$.state`.
+ * @param $ the hook's engine
+ * @returns those members of the host
+ */
+function stateOf(
+  $: Readonly<EngineInterface>,
+): Pick<
+  Host,
+  "readRun" | "updateRun" | "readReviewed" | "writeReviewed" | "readToken"
+> {
+  return {
     readRun: () => read($, RUN),
     updateRun: (change) => update($, RUN, change),
     readReviewed: () => read($, REVIEWED),
@@ -124,8 +145,8 @@ export const register: Register = (on, options) => {
     await $.command.register({
       name: "council",
       description:
-        "Independent reviewers on the working diff, one summary (send, status)",
-      argumentHint: "[question | send | status]",
+        "Independent reviewers on the working diff, one summary (send, status, cancel)",
+      argumentHint: "[question | send | status | cancel]",
     });
     // A reload keeps $.state but drops the old timers and children.
     await interruptStale(hostOf($));
@@ -143,10 +164,13 @@ export const register: Register = (on, options) => {
   });
 
   on("turn.complete", async ($, e, next) => {
+    // Not while a background subagent still works: its result is not in
+    // the diff yet. Its end brings another turn, and that one schedules.
     if (
       config.autoReview === "notify" &&
       e.agentId === undefined &&
-      e.reason === "answer"
+      e.reason === "answer" &&
+      !(await hostOf($).isAgentRunning())
     ) {
       const token = await read($, AUTO_TOKEN);
       const host = hostOf($);

@@ -24,6 +24,10 @@ export type Host = Readonly<{
   now: () => Promise<number>;
   /** `$.clock.after`. */
   after: (ms: number, callback: () => void) => Timer;
+  /** `$.clock.every`. */
+  every: (ms: number, callback: () => void) => Timer;
+  /** Whether any subagent runs now (`$.agent.list()`). */
+  isAgentRunning: () => Promise<boolean>;
   /** `$.process.run`. */
   run: (
     argv: readonly string[],

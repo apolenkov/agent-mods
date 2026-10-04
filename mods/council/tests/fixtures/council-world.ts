@@ -54,6 +54,8 @@ export function councilWorld(
     env?: Record<string, string>;
     /** `git diff HEAD` answers this late, on the mocked clock. */
     diffDelayMs?: number;
+    /** What `$.agent.list()` answers; read at each call, so a test may change it. */
+    agents?: { id: string; status: string }[];
     /** `$.model.complete` rejects, as for a model the client blocks. */
     completeRejects?: true;
   } = {},
@@ -82,6 +84,13 @@ export function councilWorld(
   });
   mock.store(on);
   on("session.start", (_engine, e) => ({ cwd: e.cwd }));
+  on("agent.list", () => ({
+    value: (script.agents ?? []).map((agent) => ({
+      ...agent,
+      description: agent.id,
+      type: "pi-runner",
+    })),
+  }));
   on("command.register", (_engine, e) => ({ value: { command: e.name } }));
   on("session.cwd", () => ({ value: "/work" }));
   on("ui.open", () => {

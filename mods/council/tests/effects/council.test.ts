@@ -164,4 +164,45 @@ describe("auto-review", () => {
       expect(world.kept.spawns).toEqual([]);
     },
   );
+
+  test(
+    "a running subagent holds the auto-review back",
+    NOTIFY,
+    async ($, on) => {
+      const script = { agents: [{ id: "a1", status: "running" }] };
+      const world = councilWorld(on, script);
+      on("turn.complete", (_engine, e) => ({ text: e.answer }));
+
+      await $.session.start(SESSION);
+      await $.turn.complete(ANSWERED_TURN);
+      await world.clock.advance(IDLE_MS);
+
+      expect(world.kept.spawns, "work still under way").toEqual([]);
+
+      script.agents = [{ id: "a1", status: "completed" }];
+      await $.turn.complete(ANSWERED_TURN);
+      await world.clock.advance(IDLE_MS);
+
+      expect(world.kept.spawns, "the next idle turn runs it").toHaveLength(3);
+    },
+  );
+
+  test(
+    "a subagent started during the idle wait is checked again",
+    NOTIFY,
+    async ($, on) => {
+      const script: { agents: { id: string; status: string }[] } = {
+        agents: [],
+      };
+      const world = councilWorld(on, script);
+      on("turn.complete", (_engine, e) => ({ text: e.answer }));
+
+      await $.session.start(SESSION);
+      await $.turn.complete(ANSWERED_TURN);
+      script.agents = [{ id: "a2", status: "running" }];
+      await world.clock.advance(IDLE_MS);
+
+      expect(world.kept.spawns).toEqual([]);
+    },
+  );
 });
