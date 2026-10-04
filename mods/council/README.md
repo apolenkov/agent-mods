@@ -88,18 +88,16 @@ Only one run at a time.
 With `autoReview` set to `notify`, an answered turn of the main conversation
 schedules a review once the session has been idle for 15 seconds (any new
 prompt cancels it), when the diff changed since the last review and the
-cooldown has passed. While a subagent is still running (a background agent
-the turn left working) nothing is scheduled, and the check is made again
-right before the review starts; the turn that follows the agent's end
+cooldown has passed. While other work the turn left running is not done (a
+subagent, or a background Bash task the transcript shows started and not yet
+ended by its completion notice), nothing is scheduled, and the check is made
+again right before the review starts; the turn that follows that work's end
 schedules it. It never holds a turn, never opens the pane, and only
 notifies: a toast and the status line `council: N findings` (`1 finding` for
 one; Claude Code adds the `council:` label). The status line shows while a
 review runs and its result until you open `/council status` or send the
 summary; then it clears, leaving room for other plugins' lines. Off by
 default, because the members' CLIs may cost you money.
-
-Background Bash tasks are not checked: the plugin API lists subagents
-(`$.agent.list()`) but not background shell tasks.
 
 ## Options
 
