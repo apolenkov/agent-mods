@@ -20,7 +20,7 @@ every agentic session raises:
 shell: ◐ codex · Review diff 2:13 · output 4s ago · › applying patch src/a.ts · +1 bg
 ```
 
-Captured live (Claude Code 2.1.289, `/shell-flow` pane in the classic layout):
+The `/shell-flow` pane as drawn in two live runs on Claude Code 2.1.289 (classic layout), rows combined; the status line is shown in its current format:
 
 ```
 ╭──────────────────────────────────────────────────────────────╮
