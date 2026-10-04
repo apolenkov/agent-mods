@@ -7,7 +7,7 @@
 Watch and check the agents your [Claude Code](https://claude.com/claude-code) session delegates to.
 A showcase marketplace of mods.
 Each mod lives, is developed and is released in its own repository; this one
-only lists them. They answer two questions every agentic session raises:
+only lists them. They answer three questions every long agentic session raises:
 
 - **Is it still working?** — [agent-shell-watch](https://github.com/apolenkov/agent-shell-watch) shows, without opening
   anything, that the session's shells and the agents you delegate to through the
@@ -16,6 +16,10 @@ only lists them. They answer two questions every agentic session raises:
 - **Is it actually right?** — [agent-council](https://github.com/apolenkov/agent-council) hands your working diff to
   every reviewer CLI you have installed, in parallel, and merges their findings
   into agreements, disagreements and unique findings.
+- **Is it time to compact?** — [agent-compact-advisor](https://github.com/apolenkov/agent-compact-advisor) scores how
+  ready the session is for `/compact` (context size, finished task, running agents,
+  cache), suggests a ready `/compact` and makes every compaction keep goals,
+  decisions and leftovers.
 
 ![agent-shell-watch: a background Codex review ticking with its current file, a failed typecheck, the status line](https://raw.githubusercontent.com/apolenkov/agent-shell-watch/main/demo/demo.gif)
 
@@ -28,12 +32,14 @@ Mods are Claude Code plugins built on function hooks. You need Claude Code
 /plugin marketplace add apolenkov/agent-watch
 /plugin install agent-shell-watch@agent-watch
 /plugin install agent-council@agent-watch
+/plugin install agent-compact-advisor@agent-watch
 ```
 
-| Mod                                                                 | What you get                                                                                                                       | Needs                                                                      |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| [agent-shell-watch](https://github.com/apolenkov/agent-shell-watch) | Status line + `/shell-watch` pane: every Bash call, background task and runner run of the session, with liveness and a stop button | nothing else                                                               |
-| [agent-council](https://github.com/apolenkov/agent-council)         | `/council [question]`, `/council send`, an opt-in auto-review that only notifies                                                   | at least two of `codex`, `pi`, `devin`, `ocr`; Jev summary: a TypeSafe key |
+| Mod                                                                         | What you get                                                                                                                       | Needs                                                                      |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| [agent-shell-watch](https://github.com/apolenkov/agent-shell-watch)         | Status line + `/shell-watch` pane: every Bash call, background task and runner run of the session, with liveness and a stop button | nothing else                                                               |
+| [agent-council](https://github.com/apolenkov/agent-council)                 | `/council [question]`, `/council send`, an opt-in auto-review that only notifies                                                   | at least two of `codex`, `pi`, `devin`, `ocr`; Jev summary: a TypeSafe key |
+| [agent-compact-advisor](https://github.com/apolenkov/agent-compact-advisor) | Status-line score for `/compact` with reasons, a ready `/compact` suggestion (Tab), a template added to every compaction           | nothing else; optional local Kev on 127.0.0.1 for the "task done" signal   |
 
 Options are listed in each mod's README and appear in `/config`. Each mod's
 repository is also a marketplace of its own:

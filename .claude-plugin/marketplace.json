@@ -23,6 +23,14 @@
         "url": "https://github.com/apolenkov/agent-council.git"
       },
       "description": "/council and an auto-review nudge: Codex, Pi, Devin and OpenCodeReview review your diff in parallel; one summary of agreements, disagreements and unique findings."
+    },
+    {
+      "name": "agent-compact-advisor",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/apolenkov/agent-compact-advisor.git"
+      },
+      "description": "Tells you when the session is ready to compact: a score with reasons, a ready /compact suggestion, and a template that keeps goals, decisions and leftovers through any compaction."
     }
   ]
 }
