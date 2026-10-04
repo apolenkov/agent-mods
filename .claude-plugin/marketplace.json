@@ -11,16 +11,16 @@
     {
       "name": "shell-flow",
       "source": {
-        "source": "github",
-        "repo": "apolenkov/claude-shell-flow"
+        "source": "url",
+        "url": "https://github.com/apolenkov/claude-shell-flow.git"
       },
       "description": "Live view of every Bash call, background task and external agent run of the session: elapsed time, output freshness, errors."
     },
     {
       "name": "council",
       "source": {
-        "source": "github",
-        "repo": "apolenkov/claude-council"
+        "source": "url",
+        "url": "https://github.com/apolenkov/claude-council.git"
       },
       "description": "/council and an auto-review nudge: Codex, Pi, Devin and OpenCodeReview review your diff in parallel; one summary of agreements, disagreements and unique findings."
     }
