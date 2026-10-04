@@ -16,11 +16,11 @@ import {
   prosePrompt,
 } from "../model/jev-summary.ts";
 import { claudePrompt, parseSummary, rawSummary } from "../model/summary.ts";
+import { systemOneEndpoint } from "../model/system-one.ts";
 import type { Host } from "./host.ts";
 
 const MAX_TOKENS = 4096;
 const MODEL_TIMEOUT_MS = 180_000;
-const JEV_URL = "https://api.typesafe.ai/v1/systemone";
 
 /** What a summarizer is handed beside the findings. */
 export type SummarizeContext = Readonly<{
@@ -66,17 +66,20 @@ const claudeSummary = async (
         ));
 };
 
+/** Where System One answers and with what key ("" for a loopback server). */
+type Jev = Readonly<{ url: string; key: string; model: string }>;
+
 const askJev = async (
   host: Host,
-  key: string,
+  jev: Jev,
   requests: readonly JevRequest[],
 ): Promise<JevAnswers> => {
   const replies = await Promise.all(
     requests.map((request) =>
-      host.fetch(JEV_URL, {
+      host.fetch(jev.url, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${key}`,
+          ...(jev.key !== "" && { Authorization: `Bearer ${jev.key}` }),
           "Content-Type": "application/json",
         },
         body: JSON.stringify(request),
@@ -96,12 +99,15 @@ const askJev = async (
 const jevOnly = async (
   host: Host,
   findings: readonly CouncilFinding[],
-  { key, config }: Readonly<{ key: string; config: CouncilConfig }>,
+  { jev, config }: Readonly<{ jev: Jev; config: CouncilConfig }>,
 ): Promise<CouncilSummary> => {
-  const model = (await host.typesafeModel()) ?? "jev-latest";
-  const scored = await askJev(host, key, scoringRequests(findings, model));
+  const scored = await askJev(host, jev, scoringRequests(findings, jev.model));
   const groups = groupsOf(findings, clustersOf(findings.length, scored));
-  const contra = await askJev(host, key, contradictionRequests(groups, model));
+  const contra = await askJev(
+    host,
+    jev,
+    contradictionRequests(groups, jev.model),
+  );
   const sorted = classify(
     groups,
     { ...scored, ...contra },
@@ -124,10 +130,35 @@ const keyOf = async (host: Host, config: CouncilConfig): Promise<string> =>
     ? ((await host.typesafeKey()) ?? "")
     : config.typesafeApiKey;
 
+// The System One endpoint to ask, or why Claude merges alone.
+const jevOf = async (
+  host: Host,
+  config: CouncilConfig,
+): Promise<Jev | string> => {
+  const endpoint = systemOneEndpoint(config.systemOneUrl);
+  if ("error" in endpoint) {
+    return `System One URL refused (${endpoint.error}); Claude merged alone.`;
+  }
+  const key = endpoint.isLoopback ? "" : await keyOf(host, config);
+  const model =
+    config.systemOneModel ||
+    ((await host.typesafeModel()) ?? "") ||
+    "jev-latest";
+  return key === "" && !endpoint.isLoopback
+    ? `jev needs a TypeSafe API key for ${new URL(endpoint.url).hostname}; Claude merged alone.`
+    : { url: endpoint.url, key, model };
+};
+
+const withNote = (summary: CouncilSummary, note: string): CouncilSummary => ({
+  ...summary,
+  notes: [...summary.notes, note],
+});
+
 /**
- * Merges every member's findings into one summary: Claude by default; Jev
- * scoring with Claude's prose when configured and keyed, Claude again when
- * Jev fails. Runs from a `$.clock.after` callback: the time spent inside
+ * Merges every member's findings into one summary: Claude by default; with
+ * `jev`, System One (TypeSafe, or a local server on loopback) scores and
+ * Claude writes the prose, Claude alone when System One is refused, unkeyed
+ * or failing, saying why. Runs from a `$.clock.after` callback: time inside
  * `$` calls (the model, the network) never counts against a hook's budget.
  * @param host the engine
  * @param findings every member's findings
@@ -147,27 +178,20 @@ export const summarize = async (
       notes: ["No findings."],
     };
   }
-  const key =
-    context.config.summarizer === "jev"
-      ? await keyOf(host, context.config)
-      : "";
-  if (key === "") {
+  if (context.config.summarizer === "claude") {
     return claudeSummary(host, findings, context);
   }
+  const jev = await jevOf(host, context.config);
+  if (typeof jev === "string") {
+    return withNote(await claudeSummary(host, findings, context), jev);
+  }
   try {
-    return await jevOnly(host, findings, {
-      key,
-      config: context.config,
-    });
+    return await jevOnly(host, findings, { jev, config: context.config });
   } catch (error) {
-    const summary = await claudeSummary(host, findings, context);
     const why = error instanceof Error ? error.message : String(error);
-    return {
-      ...summary,
-      notes: [
-        ...summary.notes,
-        `Jev unavailable (${why}); Claude merged alone.`,
-      ],
-    };
+    return withNote(
+      await claudeSummary(host, findings, context),
+      `Jev unavailable (${why}); Claude merged alone.`,
+    );
   }
 };

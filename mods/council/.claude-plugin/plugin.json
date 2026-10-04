@@ -47,9 +47,23 @@
     "typesafeApiKey": {
       "type": "string",
       "title": "TypeSafe API key",
-      "description": "For the jev summarizer; kept in secure storage. Empty: the TYPESAFE_API_KEY environment variable.",
+      "description": "For the jev summarizer on a remote System One URL; kept in secure storage. Empty: the TYPESAFE_API_KEY environment variable. A loopback URL needs none.",
       "required": false,
       "sensitive": true,
+      "default": ""
+    },
+    "systemOneUrl": {
+      "type": "string",
+      "title": "System One URL",
+      "description": "Base URL of the System One API the jev summarizer asks: TypeSafe by default, or a local server such as Kev (http://127.0.0.1:8010), which needs no key. Plain http is accepted only for 127.0.0.1, localhost and ::1.",
+      "required": false,
+      "default": "https://api.typesafe.ai"
+    },
+    "systemOneModel": {
+      "type": "string",
+      "title": "System One model",
+      "description": "The model System One runs (kev-latest for a local Kev). Empty: TYPESAFE_MODEL, else jev-latest.",
+      "required": false,
       "default": ""
     },
     "jevThreshold": {

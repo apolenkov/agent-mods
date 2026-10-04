@@ -165,6 +165,73 @@ describe("summarize", () => {
       await world.clock.settle();
 
       expect(world.kept.fetches).toEqual([]);
+      await $.command.run(councilCommand("send"));
+      await world.clock.settle();
+      expect(world.kept.submitted[0]).toContain(
+        "jev needs a TypeSafe API key for api.typesafe.ai; Claude merged alone.",
+      );
+    },
+  );
+
+  test(
+    "a loopback System One server needs no key and gets no Authorization",
+    {
+      options: {
+        summarizer: "jev",
+        systemOneUrl: "http://127.0.0.1:8010",
+        systemOneModel: "kev-latest",
+      },
+    },
+    async ($, on) => {
+      const world = councilWorld(on, {
+        installed: TWO,
+        outputs: OUTPUTS,
+        jev: jevAnswers,
+        replies: ['{"texts":["a","b","c"]}'],
+      });
+
+      await $.session.start(SESSION);
+      await $.command.run(councilCommand());
+      await world.clock.settle();
+
+      expect(world.kept.fetches.length).toBeGreaterThan(0);
+      expect(world.kept.fetches[0]?.url).toBe(
+        "http://127.0.0.1:8010/v1/systemone",
+      );
+      expect(world.kept.fetches.every((one) => one.auth === "")).toBe(true);
+      expect(JSON.parse(world.kept.fetches[0]?.body ?? "{}")).toMatchObject({
+        model: "kev-latest",
+      });
+    },
+  );
+
+  test(
+    "plain http to another host is refused: Claude merges, nothing sent",
+    {
+      options: {
+        summarizer: "jev",
+        typesafeApiKey: "ts-key",
+        // eslint-disable-next-line unicorn/prefer-https -- the refusal of plain http to a remote host is what is tested
+        systemOneUrl: "http://example.com:8010",
+      },
+    },
+    async ($, on) => {
+      const world = councilWorld(on, {
+        installed: TWO,
+        outputs: OUTPUTS,
+        replies: ['{"unique":[]}'],
+      });
+
+      await $.session.start(SESSION);
+      await $.command.run(councilCommand());
+      await world.clock.settle();
+      await $.command.run(councilCommand("send"));
+      await world.clock.settle();
+
+      expect(world.kept.fetches).toEqual([]);
+      expect(world.kept.submitted[0]).toContain(
+        "System One URL refused (http is allowed only for 127.0.0.1, localhost or ::1)",
+      );
     },
   );
 });
