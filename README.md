@@ -16,28 +16,7 @@ only lists them. They answer two questions every agentic session raises:
   every reviewer CLI you have installed, in parallel, and merges their findings
   into agreements, disagreements and unique findings.
 
-```
-shell-flow: ◐ codex · Review diff 2:13 · output 4s ago · › applying patch src/a.ts · +1 bg
-```
-
-The `/shell-flow` pane's layout (assembled from the pane the tests draw, not a
-screenshot), with the status line under it:
-
-```
-╭──────────────────────────────────────────────────────────────╮
-│ [ c clear ] [ q close ]                                      │
-│ [ 1 ▸ ] ◐ 0:51 output 1s ago  Count steps  [ s stop ]        │
-│       bg · main · for i in $(seq 40); do echo step $i; sle…  │
-│       › step 26                                              │
-│ [ 2 ▸ ] ✗ 0:03 exit 2  Fail on purpose                       │
-│       main · sleep 3; exit 2                                 │
-│ [ 3 ▸ ] ○ 0:00 denied  Show current directory and all files  │
-│       agent a189ac45c45566717 · pwd; ls -la                  │
-│       ○ Permission to use Bash has been denied.              │
-│ 1–9 open · c clear · q close · Esc → prompt                  │
-╰──────────────────────────────────────────────────────────────╯
-  ⚠ shell-flow: ✗ Fail on purpose exit 2 · +1 bg
-```
+![shell-flow: a background Codex review ticking with its current file, a failed typecheck, the status line](https://raw.githubusercontent.com/apolenkov/claude-shell-flow/main/demo/demo.gif)
 
 ## Install
 
