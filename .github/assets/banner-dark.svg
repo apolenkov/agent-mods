@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-label="agent-watch: Watch and check the agents your Claude Code session delegates to.">
-  <title>agent-watch: Watch and check the agents your Claude Code session delegates to.</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-label="agent-mods: Watch and check the agents your Claude Code session delegates to.">
+  <title>agent-mods: Watch and check the agents your Claude Code session delegates to.</title>
   <rect x="1" y="1" width="1278" height="318" rx="18" fill="#0F1626" stroke="#26324A" stroke-width="2"/>
   <path d="M178.77 98.94 A62 62 0 0 1 226.26 181.21" fill="none" stroke="#3CC9B4" stroke-width="12" stroke-linecap="round"/><path d="M215.49 199.85 A62 62 0 0 1 120.51 199.85" fill="none" stroke="#A79BFF" stroke-width="12" stroke-linecap="round"/><path d="M109.74 181.21 A62 62 0 0 1 157.23 98.94" fill="none" stroke="#F5B451" stroke-width="12" stroke-linecap="round"/><circle cx="168" cy="160" r="16" fill="#EDF1F7"/>
   <circle cx="1112" cy="52" r="7" fill="#3CC9B4"/><circle cx="1134" cy="52" r="7" fill="#A79BFF"/><circle cx="1156" cy="52" r="7" fill="#F5B451"/>
   <text x="1094" y="58" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="500" fill="#7C889C">3 mods</text>
-  <text x="290" y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="62" font-weight="700" letter-spacing="-1.2" fill="#EDF1F7">agent-watch</text>
+  <text x="290" y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="62" font-weight="700" letter-spacing="-1.2" fill="#EDF1F7">agent-mods</text>
   <text x="292" y="196" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="25" fill="#A3AEC0">Watch and check the agents your Claude Code session delegates to.</text>
   <line x1="292" y1="230" x2="1216" y2="230" stroke="#26324A" stroke-width="1.5"/>
-  <text x="292" y="266" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="18" xml:space="preserve"><tspan fill="#7C889C">/plugin marketplace add </tspan><tspan fill="#A3AEC0">apolenkov/agent-watch</tspan></text>
+  <text x="292" y="266" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="18" xml:space="preserve"><tspan fill="#7C889C">/plugin marketplace add </tspan><tspan fill="#A3AEC0">apolenkov/agent-mods</tspan></text>
 </svg>
