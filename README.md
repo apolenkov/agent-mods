@@ -23,8 +23,6 @@ developed and is released in its own repository; this one only lists them.
 call, background task and runner run (Codex, Pi, Devin, OpenCodeReview), with
 liveness and a stop button.
 
-`/plugin install agent-shell-watch@agent-watch`
-
 </td>
 <td width="33%" valign="top">
 
@@ -34,8 +32,6 @@ liveness and a stop button.
 reviewer CLI you have installed, in parallel, and merges their findings into
 agreements, disagreements and unique findings.
 
-`/plugin install agent-council@agent-watch`
-
 </td>
 <td width="33%" valign="top">
 
@@ -44,8 +40,6 @@ agreements, disagreements and unique findings.
 **Is it time to compact?** A status-line score for `/compact` with reasons, a
 ready `/compact` suggestion (Tab), and a template that keeps goals, decisions
 and leftovers through every compaction.
-
-`/plugin install agent-compact-advisor@agent-watch`
 
 </td>
 </tr>
