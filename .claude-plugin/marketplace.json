@@ -5,7 +5,7 @@
     "url": "https://github.com/apolenkov"
   },
   "metadata": {
-    "description": "A showcase marketplace of Claude Code mods, each developed in its own repository: shell-flow (see what your shells and delegated runners are doing) and council (independent reviewers on your diff)."
+    "description": "Claude Code mods for watching and checking the agents a session delegates to: agent-shell-watch (live shells, background tasks and runner runs), agent-council (parallel reviewers on your diff) and agent-compact-advisor (when to compact, and what to keep)."
   },
   "plugins": [
     {

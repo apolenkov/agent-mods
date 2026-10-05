@@ -58,9 +58,10 @@ read. Details in each mod's SECURITY.md.
 
 ## Development
 
-Code, issues and releases: [agent-shell-watch](https://github.com/apolenkov/agent-shell-watch)
-and [agent-council](https://github.com/apolenkov/agent-council) (their history
-before the split started here). This repository checks only its listing:
+Code, issues and releases: [agent-shell-watch](https://github.com/apolenkov/agent-shell-watch),
+[agent-council](https://github.com/apolenkov/agent-council) (their history
+before the split started here) and
+[agent-compact-advisor](https://github.com/apolenkov/agent-compact-advisor). This repository checks only its listing:
 `npm ci && npm run check` (prettier, `claude plugin validate --strict .`). See
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
