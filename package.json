@@ -10,13 +10,13 @@
     "prepare": "lefthook install"
   },
   "devDependencies": {
-    "@anthropic-ai/claude-code": "2.1.288",
+    "@anthropic-ai/claude-code": "2.1.289",
     "@commitlint/cli": "21.2.3",
     "@commitlint/config-conventional": "21.2.3",
     "@commitlint/types": "21.2.3",
     "lefthook": "2.1.16",
     "prettier": "3.9.9",
-    "typescript": "6.0.3"
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=26"
