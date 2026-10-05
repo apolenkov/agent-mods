@@ -5,7 +5,7 @@
     "url": "https://github.com/apolenkov"
   },
   "metadata": {
-    "description": "Claude Code mods for watching and checking the agents a session delegates to: agent-shell-watch (live shells, background tasks and runner runs), agent-council (parallel reviewers on your diff) and agent-compact-advisor (when to compact, and what to keep)."
+    "description": "Claude Code mods for watching and checking the agents a session delegates to: agent-shell-watch (live shells, background tasks and runner runs), agent-council (parallel reviewers on your diff), agent-compact-advisor (when to compact, and what to keep) and agent-autopilot (answers a poll for you only by a clear rule)."
   },
   "plugins": [
     {
@@ -31,6 +31,14 @@
         "url": "https://github.com/apolenkov/agent-compact-advisor.git"
       },
       "description": "Tells you when the session is ready to compact: a score with reasons, a ready /compact suggestion, and a template that keeps goals, decisions and leftovers through any compaction."
+    },
+    {
+      "name": "agent-autopilot",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/apolenkov/agent-autopilot.git"
+      },
+      "description": "Answers AskUserQuestion polls for you only when the assistant marked one option (Recommended) and nothing looks irreversible; by default a star hint, with a journal and a limit of five."
     }
   ]
 }

@@ -15,7 +15,7 @@ developed and is released in its own repository; this one only lists them.
 
 <table>
 <tr>
-<td width="33%" valign="top">
+<td width="25%" valign="top">
 
 ### [agent-shell-watch](https://github.com/apolenkov/agent-shell-watch)
 
@@ -24,7 +24,7 @@ call, background task and runner run (Codex, Pi, Devin, OpenCodeReview), with
 liveness and a stop button.
 
 </td>
-<td width="33%" valign="top">
+<td width="25%" valign="top">
 
 ### [agent-council](https://github.com/apolenkov/agent-council)
 
@@ -33,13 +33,22 @@ reviewer CLI you have installed, in parallel, and merges their findings into
 agreements, disagreements and unique findings.
 
 </td>
-<td width="33%" valign="top">
+<td width="25%" valign="top">
 
 ### [agent-compact-advisor](https://github.com/apolenkov/agent-compact-advisor)
 
 **Is it time to compact?** A status-line score for `/compact` with reasons, a
 ready `/compact` suggestion (Tab), and a template that keeps goals, decisions
 and leftovers through every compaction.
+
+</td>
+<td width="25%" valign="top">
+
+### [agent-autopilot](https://github.com/apolenkov/agent-autopilot)
+
+**Who picks the option?** Answers a poll for you only when the assistant marked
+one option (Recommended) and nothing looks irreversible; by default it only
+stars the option. A journal and a limit of five keep it checkable.
 
 </td>
 </tr>
@@ -59,13 +68,15 @@ Mods are Claude Code plugins built on function hooks. You need Claude Code
 /plugin install agent-shell-watch@agent-mods
 /plugin install agent-council@agent-mods
 /plugin install agent-compact-advisor@agent-mods
+/plugin install agent-autopilot@agent-mods
 ```
 
-| Mod                                                                         | Needs                                                                      |
-| --------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| [agent-shell-watch](https://github.com/apolenkov/agent-shell-watch)         | nothing else                                                               |
-| [agent-council](https://github.com/apolenkov/agent-council)                 | at least two of `codex`, `pi`, `devin`, `ocr`; Jev summary: a TypeSafe key |
-| [agent-compact-advisor](https://github.com/apolenkov/agent-compact-advisor) | nothing else; optional local Kev on 127.0.0.1 for the "task done" signal   |
+| Mod                                                                         | Needs                                                                                 |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [agent-shell-watch](https://github.com/apolenkov/agent-shell-watch)         | nothing else                                                                          |
+| [agent-council](https://github.com/apolenkov/agent-council)                 | at least two of `codex`, `pi`, `devin`, `ocr`; Jev summary: a TypeSafe key            |
+| [agent-compact-advisor](https://github.com/apolenkov/agent-compact-advisor) | nothing else; optional local Kev on 127.0.0.1 for the "task done" signal              |
+| [agent-autopilot](https://github.com/apolenkov/agent-autopilot)             | nothing else; no network, no model; interactive sessions only (no `-p`, no subagents) |
 
 Options are listed in each mod's README and appear in `/config`. Each mod's
 repository is also a marketplace of its own, e.g.
