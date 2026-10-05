@@ -1,13 +1,13 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.svg">
-  <img alt="agent-watch: watch and check the agents your Claude Code session delegates to" src=".github/assets/banner-light.svg" width="100%">
+  <img alt="agent-mods: watch and check the agents your Claude Code session delegates to" src=".github/assets/banner-light.svg" width="100%">
 </picture>
 
-[![ci](https://github.com/apolenkov/agent-watch/actions/workflows/ci.yml/badge.svg)](https://github.com/apolenkov/agent-watch/actions/workflows/ci.yml)
-[![codeql](https://github.com/apolenkov/agent-watch/actions/workflows/codeql.yml/badge.svg)](https://github.com/apolenkov/agent-watch/actions/workflows/codeql.yml)
+[![ci](https://github.com/apolenkov/agent-mods/actions/workflows/ci.yml/badge.svg)](https://github.com/apolenkov/agent-mods/actions/workflows/ci.yml)
+[![codeql](https://github.com/apolenkov/agent-mods/actions/workflows/codeql.yml/badge.svg)](https://github.com/apolenkov/agent-mods/actions/workflows/codeql.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code ≥ 2.1.287](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.287-1C60A3)](https://claude.com/claude-code)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/apolenkov/agent-watch/badge)](https://scorecard.dev/viewer/?uri=github.com/apolenkov/agent-watch)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/apolenkov/agent-mods/badge)](https://scorecard.dev/viewer/?uri=github.com/apolenkov/agent-mods)
 
 A showcase marketplace of [Claude Code](https://claude.com/claude-code) mods
 that watch and check the agents your session delegates to. Each mod lives, is
@@ -55,10 +55,10 @@ Mods are Claude Code plugins built on function hooks. You need Claude Code
 **2.1.287+**, where mods are on by default.
 
 ```
-/plugin marketplace add apolenkov/agent-watch
-/plugin install agent-shell-watch@agent-watch
-/plugin install agent-council@agent-watch
-/plugin install agent-compact-advisor@agent-watch
+/plugin marketplace add apolenkov/agent-mods
+/plugin install agent-shell-watch@agent-mods
+/plugin install agent-council@agent-mods
+/plugin install agent-compact-advisor@agent-mods
 ```
 
 | Mod                                                                         | Needs                                                                      |
@@ -72,10 +72,13 @@ repository is also a marketplace of its own, e.g.
 `/plugin marketplace add apolenkov/agent-shell-watch`.
 
 > [!NOTE]
-> **Renamed on 2026-10-04.** The marketplace `claude-mods` is now
-> `agent-watch`, `shell-flow` is `agent-shell-watch` (command `/shell-watch`)
-> and `council` is `agent-council` (command still `/council`); reinstall under
-> the new names.
+> **Renamed.** The marketplace `claude-mods` became `agent-watch` on
+> 2026-10-04 and `agent-mods` on 2026-10-05 (the old name was easy to confuse
+> with the agent-shell-watch mod); `shell-flow` is `agent-shell-watch` (command
+> `/shell-watch`) and `council` is `agent-council` (command still `/council`).
+> Reinstall under the new names: `/plugin marketplace add apolenkov/agent-mods`,
+> install the mods `@agent-mods`, then uninstall the `@agent-watch` ones and
+> `/plugin marketplace remove agent-watch`.
 
 ## Privacy
 
