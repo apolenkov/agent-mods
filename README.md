@@ -58,6 +58,22 @@ stars the option. A journal and a limit of five keep it checkable.
 
 <sub>agent-shell-watch in action.</sub>
 
+## Demos
+
+Every mod records its own demo; these are those recordings.
+
+![agent-council: four reviewer CLIs running in parallel, their findings merged into agreements, disagreements and unique findings](https://raw.githubusercontent.com/apolenkov/agent-council/main/demo/demo.gif)
+
+<sub>agent-council: `/council` on a working diff.</sub>
+
+![agent-compact-advisor: the status line scoring the session for /compact, the reasons behind the score and the suggested command](https://raw.githubusercontent.com/apolenkov/agent-compact-advisor/main/demo/demo.gif)
+
+<sub>agent-compact-advisor: the score, the reasons and the ready `/compact`.</sub>
+
+![agent-autopilot: a poll with one option marked Recommended, the mod starring it and the journal line it writes](https://raw.githubusercontent.com/apolenkov/agent-autopilot/main/demo/demo.gif)
+
+<sub>agent-autopilot: a poll answered, and the journal line it leaves.</sub>
+
 ## Install
 
 Mods are Claude Code plugins built on function hooks. You need Claude Code
@@ -104,8 +120,9 @@ talks only to a loopback Kev. Details in each mod's SECURITY.md.
 
 Code, issues and releases: [agent-shell-watch](https://github.com/apolenkov/agent-shell-watch),
 [agent-council](https://github.com/apolenkov/agent-council) (their history
-before the split started here) and
-[agent-compact-advisor](https://github.com/apolenkov/agent-compact-advisor).
+before the split started here),
+[agent-compact-advisor](https://github.com/apolenkov/agent-compact-advisor) and
+[agent-autopilot](https://github.com/apolenkov/agent-autopilot).
 This repository checks only its listing: `npm ci && npm run check` (prettier,
 `claude plugin validate --strict .`). See [CONTRIBUTING.md](CONTRIBUTING.md)
 and [SUPPORT.md](SUPPORT.md).
